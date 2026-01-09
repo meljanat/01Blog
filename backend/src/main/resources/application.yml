@@ -1,0 +1,18 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/01blog
+    username: MOUAD
+    password: 00000
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+# Custom JWT Secret
+blog:
+  app:
+    jwtSecret: "a-very-long-secret-key-that-should-be-kept-safe-01blog-project"
+    jwtExpirationMs: 86400000
