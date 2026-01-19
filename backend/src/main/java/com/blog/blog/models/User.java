@@ -1,8 +1,13 @@
-package com.blog.models;
+package com.blog.blog.models;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -14,28 +19,12 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @NotBlank
     @Column(unique = true)
     private String username;
-
-    @NotBlank
-    @Email
     @Column(unique = true)
     private String email;
-
-    @NotBlank
     private String password;
-
     @Enumerated(EnumType.STRING)
     private ERole role;
-
     private boolean isBanned = false;
-
-    public User(String username, String email, String password, ERole role) {
-        this.username = username;
-        this.email = email;
-        this.password = password;
-        this.role = role;
-    }
 }

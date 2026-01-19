@@ -1,0 +1,15 @@
+<div class="register-container">
+    <h2>Create Account</h2>
+    <form (ngSubmit)="onRegister()">
+        <input type="text" name="username" [(ngModel)]="user.username" placeholder="Username" required>
+        <input type="email" name="email" [(ngModel)]="user.email" placeholder="Email Address" required>
+        <input type="password" name="password" [(ngModel)]="user.password" placeholder="Password" required>
+
+        <label>
+            <input type="checkbox" name="isAdmin" [(ngModel)]="user.isAdmin"> Register as Admin?
+        </label>
+
+        <button type="submit">Register</button>
+    </form>
+    <p>Already have an account? <a href="/login">Login here</a></p>
+</div>

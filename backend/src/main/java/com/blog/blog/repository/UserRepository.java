@@ -1,13 +1,15 @@
-package com.blog.repository;
+package com.blog.blog.repository;
 
-import com.blog.models.User;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
-@Repository
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.blog.blog.models.User;
+
 public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByUsername(String username);
+
     Boolean existsByUsername(String username);
+
     Boolean existsByEmail(String email);
 }

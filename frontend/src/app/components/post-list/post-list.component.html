@@ -1,0 +1,31 @@
+<div class="feed-container">
+    <h1>01Blog Feed</h1>
+
+    <div *ngIf="posts.length === 0" class="no-posts">
+        <p>No posts yet. Be the first to share something!</p>
+    </div>
+
+    <div class="post-card" *ngFor="let post of posts">
+        <div class="post-header">
+            <span class="username">@{{ post.author.username }}</span>
+            <span class="date">{{ post.createdAt | date:'medium' }}</span>
+        </div>
+
+        <h2 class="post-title">{{ post.title }}</h2>
+
+        <div class="post-media" *ngIf="post.mediaUrl">
+            <video *ngIf="post.mediaUrl.endsWith('.mp4')" controls [src]="getMediaUrl(post.mediaUrl)"></video>
+
+            <img *ngIf="!post.mediaUrl.endsWith('.mp4')" [src]="getMediaUrl(post.mediaUrl)" alt="Post media">
+        </div>
+
+        <div class="post-content">
+            <p>{{ post.content }}</p>
+        </div>
+
+        <div class="post-actions">
+            <button class="btn-like">Like</button>
+            <button class="btn-comment">Comment</button>
+        </div>
+    </div>
+</div>

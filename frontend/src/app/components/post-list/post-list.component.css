@@ -1,0 +1,41 @@
+.feed-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.post-card {
+    background: white;
+    border: 1px solid #dbdbdb;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    padding: 15px;
+}
+
+.post-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    color: #666;
+}
+
+.post-media img,
+.post-media video {
+    width: 100%;
+    border-radius: 4px;
+    margin: 10px 0;
+}
+
+.post-title {
+    margin: 5px 0;
+    font-size: 1.2rem;
+}
+
+.post-actions button {
+    margin-right: 15px;
+    background: none;
+    border: none;
+    color: #0095f6;
+    cursor: pointer;
+    font-weight: bold;
+}
