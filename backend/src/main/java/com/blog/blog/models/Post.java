@@ -27,6 +27,7 @@ public class Post {
     @Column(columnDefinition = "TEXT")
     private String content;
 
+    @Column(nullable = true)
     private String mediaUrl;
 
     private LocalDateTime createdAt = LocalDateTime.now();

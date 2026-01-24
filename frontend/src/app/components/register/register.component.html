@@ -1,15 +1,35 @@
-<div class="register-container">
-    <h2>Create Account</h2>
-    <form (ngSubmit)="onRegister()">
-        <input type="text" name="username" [(ngModel)]="user.username" placeholder="Username" required>
-        <input type="email" name="email" [(ngModel)]="user.email" placeholder="Email Address" required>
-        <input type="password" name="password" [(ngModel)]="user.password" placeholder="Password" required>
+<div class="auth-container">
+    <div class="auth-card">
+        <h2>Create Account</h2>
+        <p class="subtitle">Join the community and start sharing.</p>
 
-        <label>
-            <input type="checkbox" name="isAdmin" [(ngModel)]="user.isAdmin"> Register as Admin?
-        </label>
+        <form (ngSubmit)="onRegister()">
+            <div class="input-group">
+                <label>Username</label>
+                <input type="text" [(ngModel)]="user.username" name="username" placeholder="Choose a username" required>
+            </div>
 
-        <button type="submit">Register</button>
-    </form>
-    <p>Already have an account? <a href="/login">Login here</a></p>
+            <div class="input-group">
+                <label>Email Address</label>
+                <input type="email" [(ngModel)]="user.email" name="email" placeholder="name@example.com" required>
+            </div>
+
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" [(ngModel)]="user.password" name="password" placeholder="Create a password"
+                    required>
+            </div>
+
+            <div class="input-group checkbox-group" style="display: flex; align-items: center; gap: 10px;">
+                <input type="checkbox" [(ngModel)]="user.isAdmin" name="isAdmin" style="width: auto;">
+                <label style="margin: 0; cursor: pointer;">Register as Admin?</label>
+            </div>
+
+            <button type="submit" class="primary-btn">Sign Up</button>
+        </form>
+
+        <div class="auth-footer">
+            <p>Already have an account? <a routerLink="/login">Sign in</a></p>
+        </div>
+    </div>
 </div>

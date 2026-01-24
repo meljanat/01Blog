@@ -1,29 +1,39 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
-export class LoginComponent {
-  form = { username: '', password: '' };
+export class LoginComponent implements OnInit {
+  credentials = { username: '', password: '' };
 
   constructor(private authService: AuthService, private router: Router) { }
 
-  onSubmit() {
-    this.authService.login(this.form).subscribe({
-      next: (data) => {
-        this.authService.saveToken(data.token);
+  ngOnInit(): void {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      if (localStorage.getItem('auth-token')) {
         this.router.navigate(['/home']);
-        console.log(data);
+      }
+    }
+  }
+
+  onLogin() {
+    this.authService.login(this.credentials).subscribe({
+      next: (res) => {
+        localStorage.setItem('auth-token', res.token);
+        this.router.navigate(['/home']);
       },
-      error: (err) => alert(err.error.message)
+      error: (err) => {
+        console.error(err);
+        alert('Invalid username or password');
+      }
     });
   }
 }

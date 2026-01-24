@@ -46,18 +46,19 @@ public class PostController {
     }
 
     @PostMapping("/upload")
-    public ResponseEntity<?> createPostWithMedia(
+    public ResponseEntity<?> createPost(
             @RequestParam("title") String title,
             @RequestParam("content") String content,
-            @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "file", required = false) MultipartFile file,
             Authentication authentication) {
 
-        // 1. Save the file to disk
-        String fileUrl = fileStorageService.save(file);
+        String mediaUrl = null;
 
-        // 2. Save the post details to DB
-        Post post = postService.createPost(title, content, fileUrl, authentication.getName());
+        if (file != null && !file.isEmpty()) {
+            mediaUrl = fileStorageService.save(file);
+        }
 
+        Post post = postService.createPost(title, content, mediaUrl, authentication.getName());
         return ResponseEntity.ok(post);
     }
 }

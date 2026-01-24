@@ -1,12 +1,26 @@
-import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component } from '@angular/core';
+import { Router, RouterOutlet, RouterLink } from '@angular/router';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  standalone: true,
+  imports: [RouterOutlet, RouterLink, CommonModule],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+  styleUrls: ['./app.component.css']
 })
 export class App {
-  protected readonly title = signal('frontend');
+  constructor(private router: Router) { }
+
+  isLoggedIn(): boolean {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      return !!localStorage.getItem('auth-token');
+    }
+    return false;
+  }
+
+  logout() {
+    localStorage.removeItem('auth-token');
+    this.router.navigate(['/login']);
+  }
 }

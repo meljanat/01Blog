@@ -1,1 +1,18 @@
-<router-outlet></router-outlet>
+<nav class="navbar" *ngIf="isLoggedIn()">
+    <div class="nav-content">
+        <div class="logo">01Blog</div>
+        <div class="nav-links">
+            <a routerLink="/home" routerLinkActive="active">
+                <span class="icon">🏠</span> Home
+            </a>
+            <a routerLink="/create" routerLinkActive="active">
+                <span class="icon">➕</span> Create
+            </a>
+            <button (click)="logout()" class="logout-btn">Logout</button>
+        </div>
+    </div>
+</nav>
+
+<div class="main-layout">
+    <router-outlet></router-outlet>
+</div>

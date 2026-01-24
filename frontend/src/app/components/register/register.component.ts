@@ -2,12 +2,12 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.css']
 })
@@ -23,14 +23,13 @@ export class RegisterComponent {
 
   onRegister() {
     this.authService.register(this.user).subscribe({
-      next: (res) => {
-        console.log(res);
-        alert('Registration successful! You can now log in.');
+      next: () => {
+        alert('Registration successful! Please login.');
         this.router.navigate(['/login']);
       },
       error: (err) => {
-        console.log(err);
-        alert('Registration failed. Username or Email might already exist.');
+        console.error(err);
+        alert('Registration failed. Try a different username.');
       }
     });
   }

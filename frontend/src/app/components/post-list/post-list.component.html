@@ -1,31 +1,53 @@
-<div class="feed-container">
-    <h1>01Blog Feed</h1>
-
-    <div *ngIf="posts.length === 0" class="no-posts">
-        <p>No posts yet. Be the first to share something!</p>
+<div class="feed-layout">
+    <div class="feed-header">
+        <h1>Home Feed</h1>
+        <div class="tabs">
+            <span class="active-tab">For You</span>
+            <span>Following</span>
+        </div>
     </div>
 
-    <div class="post-card" *ngFor="let post of posts">
-        <div class="post-header">
-            <span class="username">@{{ post.author.username }}</span>
-            <span class="date">{{ post.createdAt | date:'medium' }}</span>
+    <div *ngIf="posts.length === 0" class="empty-state">
+        <p>No posts yet. Be the first to create one!</p>
+    </div>
+
+    <div *ngFor="let post of posts" class="post-card">
+
+        <div class="card-inner">
+            <div class="avatar-section">
+                <div class="avatar-circle">
+                    {{ post.author.username.charAt(0).toUpperCase() }}
+                </div>
+            </div>
+
+            <div class="content-section">
+                <div class="post-info">
+                    <span class="username">@{{ post.author.username }}</span>
+                    <span class="dot">·</span>
+                    <span class="date">{{ post.createdAt | date:'MMM d' }}</span>
+                </div>
+
+                <h3 class="post-title">{{ post.title }}</h3>
+                <p class="post-text">{{ post.content }}</p>
+
+                <div class="media-wrapper" *ngIf="post.mediaUrl">
+                    <video *ngIf="post.mediaUrl.endsWith('.mp4')" controls [src]="getMediaUrl(post.mediaUrl)"></video>
+                    <img *ngIf="!post.mediaUrl.endsWith('.mp4')" [src]="getMediaUrl(post.mediaUrl)" alt="Post media">
+                </div>
+
+                <div class="post-actions">
+                    <button class="action-btn like">
+                        <span class="icon">♡</span> Like
+                    </button>
+                    <button class="action-btn comment">
+                        <span class="icon">💬</span> Comment
+                    </button>
+                    <button class="action-btn share">
+                        <span class="icon">↗</span> Share
+                    </button>
+                </div>
+            </div>
         </div>
 
-        <h2 class="post-title">{{ post.title }}</h2>
-
-        <div class="post-media" *ngIf="post.mediaUrl">
-            <video *ngIf="post.mediaUrl.endsWith('.mp4')" controls [src]="getMediaUrl(post.mediaUrl)"></video>
-
-            <img *ngIf="!post.mediaUrl.endsWith('.mp4')" [src]="getMediaUrl(post.mediaUrl)" alt="Post media">
-        </div>
-
-        <div class="post-content">
-            <p>{{ post.content }}</p>
-        </div>
-
-        <div class="post-actions">
-            <button class="btn-like">Like</button>
-            <button class="btn-comment">Comment</button>
-        </div>
     </div>
 </div>

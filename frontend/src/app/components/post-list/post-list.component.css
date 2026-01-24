@@ -1,41 +1,177 @@
-.feed-container {
+.feed-layout {
     max-width: 600px;
     margin: 0 auto;
-    padding: 20px;
+    border-left: 1px solid #2f3336;
+    border-right: 1px solid #2f3336;
+    min-height: 100vh;
+}
+
+.feed-header {
+    position: sticky;
+    top: 60px;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    z-index: 10;
+    border-bottom: 1px solid #2f3336;
+    padding-top: 10px;
+}
+
+.feed-header h1 {
+    font-size: 1.2rem;
+    padding: 0 16px;
+    margin: 0 0 10px 0;
+    color: #e7e9ea;
+}
+
+.tabs {
+    display: flex;
+}
+
+.tabs span {
+    flex: 1;
+    text-align: center;
+    padding: 15px 0;
+    color: #71767b;
+    font-weight: 500;
+    cursor: pointer;
+    position: relative;
+}
+
+.tabs span:hover {
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
+.active-tab {
+    color: #e7e9ea !important;
+    font-weight: 700 !important;
+}
+
+.active-tab::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 56px;
+    height: 4px;
+    background-color: #1d9bf0;
+    border-radius: 2px;
 }
 
 .post-card {
-    background: white;
-    border: 1px solid #dbdbdb;
-    border-radius: 8px;
-    margin-bottom: 30px;
-    padding: 15px;
+    padding: 16px;
+    border-bottom: 1px solid #2f3336;
+    cursor: pointer;
+    transition: background-color 0.2s;
 }
 
-.post-header {
+.post-card:hover {
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
+.card-inner {
     display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
-    color: #666;
+    gap: 12px;
 }
 
-.post-media img,
-.post-media video {
-    width: 100%;
-    border-radius: 4px;
-    margin: 10px 0;
+.avatar-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #333;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.content-section {
+    flex: 1;
+    min-width: 0;
+}
+
+.post-info {
+    margin-bottom: 4px;
+}
+
+.username {
+    font-weight: 700;
+    color: #e7e9ea;
+}
+
+.dot {
+    margin: 0 5px;
+    color: #71767b;
+}
+
+.date {
+    color: #71767b;
+    font-size: 0.95rem;
 }
 
 .post-title {
-    margin: 5px 0;
-    font-size: 1.2rem;
+    color: #e7e9ea;
+    font-size: 1rem;
+    margin: 0 0 4px 0;
 }
 
-.post-actions button {
-    margin-right: 15px;
+.post-text {
+    color: #e7e9ea;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin: 0 0 12px 0;
+    white-space: pre-wrap;
+}
+
+.media-wrapper {
+    margin-top: 10px;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid #2f3336;
+}
+
+.media-wrapper img,
+.media-wrapper video {
+    width: 100%;
+    display: block;
+    max-height: 500px;
+    object-fit: cover;
+}
+
+.post-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 12px;
+    max-width: 400px;
+}
+
+.action-btn {
     background: none;
     border: none;
-    color: #0095f6;
+    color: #71767b;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
     cursor: pointer;
-    font-weight: bold;
+    transition: color 0.2s;
+    padding: 8px;
+    border-radius: 50%;
+}
+
+.action-btn:hover {
+    background-color: rgba(29, 155, 240, 0.1);
+    color: #1d9bf0;
+}
+
+.like:hover {
+    color: #f91880;
+    background-color: rgba(249, 24, 128, 0.1);
+}
+
+.share:hover {
+    color: #00ba7c;
+    background-color: rgba(0, 186, 124, 0.1);
 }

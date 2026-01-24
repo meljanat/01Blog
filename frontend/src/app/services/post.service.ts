@@ -10,17 +10,22 @@ export class PostService {
   constructor(private http: HttpClient) { }
 
   private getAuthHeaders() {
+    if (typeof window === 'undefined' || !window.localStorage) {
+      return {};
+    }
     const token = localStorage.getItem('auth-token');
-    return new HttpHeaders().set('Authorization', `Bearer ${token}`);
+    return {
+      headers: new HttpHeaders({
+        'Authorization': `Bearer ${token}`
+      })
+    };
   }
 
   getAllPosts(): Observable<Post[]> {
-    return this.http.get<Post[]>(this.API_URL);
+    return this.http.get<Post[]>(this.API_URL, this.getAuthHeaders());
   }
 
   createPost(formData: FormData): Observable<any> {
-    return this.http.post(this.API_URL + '/upload', formData, {
-      headers: this.getAuthHeaders()
-    });
+    return this.http.post(`${this.API_URL}/upload`, formData, this.getAuthHeaders());
   }
 }
