@@ -1,6 +1,7 @@
 package com.blog.blog.controllers;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -14,31 +15,51 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.blog.blog.models.Comment;
-import com.blog.blog.services.CommentService;
+import com.blog.blog.models.Post;
+import com.blog.blog.models.User;
+import com.blog.blog.repository.CommentRepository;
+import com.blog.blog.repository.PostRepository;
+import com.blog.blog.repository.UserRepository;
 
 @RestController
-@RequestMapping("/api/posts/{postId}/comments")
-@CrossOrigin(origins = "*")
+@RequestMapping("/api/comments")
+@CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true")
 public class CommentController {
 
     @Autowired
-    private CommentService commentService;
+    private CommentRepository commentRepository;
+    @Autowired
+    private PostRepository postRepository;
+    @Autowired
+    private UserRepository userRepository;
 
-    public record CommentRequest(String content) {
+    // Get all comments for a specific post
+    @GetMapping("/{postId}")
+    public ResponseEntity<List<Comment>> getComments(@PathVariable Long postId) {
+        return ResponseEntity.ok(commentRepository.findByPostIdOrderByCreatedAtDesc(postId));
     }
 
-    @PostMapping
-    public ResponseEntity<Comment> addComment(
+    // Add a new comment
+    @PostMapping("/{postId}")
+    public ResponseEntity<?> addComment(
             @PathVariable Long postId,
-            @RequestBody CommentRequest req,
+            @RequestBody Map<String, String> payload,
             Authentication authentication) {
 
-        Comment comment = commentService.addComment(postId, req.content(), authentication.getName());
-        return ResponseEntity.ok(comment);
-    }
+        String content = payload.get("content");
+        if (content == null || content.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body("Comment cannot be empty");
+        }
 
-    @GetMapping
-    public ResponseEntity<List<Comment>> getComments(@PathVariable Long postId) {
-        return ResponseEntity.ok(commentService.getCommentsByPost(postId));
+        User user = userRepository.findByUsername(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post not found"));
+
+        Comment comment = new Comment(content, user, post);
+        Comment savedComment = commentRepository.save(comment);
+
+        return ResponseEntity.ok(savedComment);
     }
 }

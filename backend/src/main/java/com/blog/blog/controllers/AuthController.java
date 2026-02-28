@@ -1,53 +1,87 @@
 package com.blog.blog.controllers;
 
+import com.blog.blog.models.User;
+import com.blog.blog.payload.request.LoginRequest;
+import com.blog.blog.payload.request.SignupRequest;
+import com.blog.blog.payload.response.JwtResponse;
+import com.blog.blog.repository.UserRepository;
+import com.blog.blog.security.jwt.JwtUtils;
+import com.blog.blog.security.services.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.*;
 
-import com.blog.blog.payload.JwtResponse;
-import com.blog.blog.payload.LoginRequest;
-import com.blog.blog.security.JwtUtils;
-import com.blog.blog.services.AuthService;
+import java.util.List;
+import java.util.stream.Collectors;
 
+@CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "*")
 public class AuthController {
-    @Autowired
-    AuthService authService;
+
     @Autowired
     AuthenticationManager authenticationManager;
+
+    @Autowired
+    UserRepository userRepository;
+
+    @Autowired
+    PasswordEncoder encoder;
+
     @Autowired
     JwtUtils jwtUtils;
 
-    public record SignupRequest(String username, String email, String password, boolean isAdmin) {
+    @PostMapping("/signin")
+    public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
+
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String jwt = jwtUtils.generateJwtToken(authentication);
+
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+
+        // Extract the single role we converted into an Authority
+        List<String> roles = userDetails.getAuthorities().stream()
+                .map(item -> item.getAuthority())
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(new JwtResponse(jwt,
+                userDetails.getId(),
+                userDetails.getUsername(),
+                userDetails.getEmail(),
+                roles));
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<?> registerUser(@RequestBody SignupRequest req) {
-        String result = authService.registerUser(req.username(), req.email(), req.password(), req.isAdmin());
-        return result.contains("Error") ? ResponseEntity.badRequest().body(result) : ResponseEntity.ok(result);
-    }
+    public ResponseEntity<?> registerUser(@RequestBody SignupRequest signUpRequest) {
+        if (userRepository.existsByUsername(signUpRequest.getUsername())) {
+            return ResponseEntity.badRequest().body("Error: Username is already taken!");
+        }
 
-    @PostMapping("/signin")
-    public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginReq) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginReq.getUsername(), loginReq.getPassword()));
+        if (userRepository.existsByEmail(signUpRequest.getEmail())) {
+            return ResponseEntity.badRequest().body("Error: Email is already in use!");
+        }
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        String jwt = jwtUtils.generateTokenFromUsername(userDetails.getUsername());
-        String role = userDetails.getAuthorities().iterator().next().getAuthority();
+        // Create new user's account
+        User user = new User(signUpRequest.getUsername(),
+                signUpRequest.getEmail(),
+                encoder.encode(signUpRequest.getPassword()));
 
-        return ResponseEntity.ok(new JwtResponse(jwt, userDetails.getUsername(), role));
+        if (signUpRequest.getIsAdmin() != null && signUpRequest.getIsAdmin()) {
+            user.setRole("ROLE_ADMIN");
+        } else {
+            user.setRole("ROLE_USER");
+        }
+
+        userRepository.save(user);
+
+        return ResponseEntity.ok("User registered successfully!");
     }
 }

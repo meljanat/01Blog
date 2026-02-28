@@ -1,53 +1,83 @@
 <div class="feed-layout">
+
     <div class="feed-header">
-        <h1>Home Feed</h1>
+        <h2>Home</h2>
         <div class="tabs">
-            <span class="active-tab">For You</span>
-            <span>Following</span>
+            <div class="tab active">For You</div>
+            <div class="tab">Following</div>
         </div>
     </div>
 
     <div *ngIf="posts.length === 0" class="empty-state">
-        <p>No posts yet. Be the first to create one!</p>
+        <p>No posts yet. Be the first to share something!</p>
     </div>
 
     <div *ngFor="let post of posts" class="post-card">
 
         <div class="card-inner">
-            <div class="avatar-section">
+            <div class="avatar-column">
                 <div class="avatar-circle">
                     {{ post.author.username.charAt(0).toUpperCase() }}
                 </div>
             </div>
 
-            <div class="content-section">
-                <div class="post-info">
+            <div class="content-column">
+
+                <div class="post-header-info">
                     <span class="username">@{{ post.author.username }}</span>
                     <span class="dot">·</span>
                     <span class="date">{{ post.createdAt | date:'MMM d' }}</span>
                 </div>
 
-                <h3 class="post-title">{{ post.title }}</h3>
+                <h3 class="post-title" *ngIf="post.title">{{ post.title }}</h3>
                 <p class="post-text">{{ post.content }}</p>
 
-                <div class="media-wrapper" *ngIf="post.mediaUrl">
+                <div class="media-container" *ngIf="post.mediaUrl">
                     <video *ngIf="post.mediaUrl.endsWith('.mp4')" controls [src]="getMediaUrl(post.mediaUrl)"></video>
                     <img *ngIf="!post.mediaUrl.endsWith('.mp4')" [src]="getMediaUrl(post.mediaUrl)" alt="Post media">
                 </div>
 
                 <div class="post-actions">
-                    <button class="action-btn like">
-                        <span class="icon">♡</span> Like
+                    <button class="action-btn like-btn">
+                        <span class="icon">♡</span>
                     </button>
-                    <button class="action-btn comment">
-                        <span class="icon">💬</span> Comment
+
+                    <button class="action-btn comment-btn" (click)="toggleComments(post.id)">
+                        <span class="icon">💬</span>
                     </button>
-                    <button class="action-btn share">
-                        <span class="icon">↗</span> Share
+
+                    <button class="action-btn share-btn">
+                        <span class="icon">↗</span>
                     </button>
+                </div>
+
+                <div class="comment-section" *ngIf="activeCommentPostId === post.id">
+
+                    <div class="comment-input-area">
+                        <input type="text" [(ngModel)]="newCommentText" placeholder="Post your reply"
+                            (keyup.enter)="submitComment(post.id)">
+                        <button class="reply-btn" (click)="submitComment(post.id)" [disabled]="!newCommentText.trim()">
+                            Reply
+                        </button>
+                    </div>
+
+                    <div class="comments-list">
+                        <div *ngFor="let comment of currentComments" class="comment-item">
+                            <div class="comment-avatar">
+                                {{ comment.author.username.charAt(0).toUpperCase() }}
+                            </div>
+                            <div class="comment-bubble">
+                                <div class="comment-meta">
+                                    <span class="comment-author">@{{ comment.author.username }}</span>
+                                    <span class="comment-date">{{ comment.createdAt | date:'shortTime' }}</span>
+                                </div>
+                                <p>{{ comment.content }}</p>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
-
     </div>
 </div>

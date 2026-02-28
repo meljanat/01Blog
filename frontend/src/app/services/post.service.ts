@@ -28,4 +28,16 @@ export class PostService {
   createPost(formData: FormData): Observable<any> {
     return this.http.post(`${this.API_URL}/upload`, formData, this.getAuthHeaders());
   }
+
+  getComments(postId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.API_URL}/comments/${postId}`, this.getAuthHeaders());
+  }
+
+  addComment(postId: number, content: string): Observable<any> {
+    return this.http.post(
+      `${this.API_URL}/comments/${postId}`,
+      { content },
+      this.getAuthHeaders()
+    );
+  }
 }

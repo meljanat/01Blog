@@ -1,4 +1,4 @@
-package com.blog.blog.payload;
+package com.blog.blog.payload.request;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;

@@ -1,19 +1,25 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PostService } from '../../services/post.service';
-import { Post } from '../../models/post.model';
+import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-post-list',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './post-list.component.html',
   styleUrls: ['./post-list.component.css']
 })
 export class PostListComponent implements OnInit {
-  posts: Post[] = [];
+  posts: any[] = [];
 
-  constructor(private postService: PostService) { }
+  // Track which post has comments open
+  activeCommentPostId: number | null = null;
+  currentComments: any[] = [];
+  newCommentText: string = '';
+
+  constructor(private postService: PostService, router: Router) { }
 
   ngOnInit(): void {
     this.loadPosts();
@@ -22,15 +28,46 @@ export class PostListComponent implements OnInit {
   loadPosts() {
     this.postService.getAllPosts().subscribe({
       next: (data) => {
-        this.posts = data;
+        if (data.error) {
+          localStorage.removeItem('auth-token')
+        } else this.posts = data;
       },
-      error: (err) => console.error('Could not load posts', err)
+      error: (err) => {
+        console.error('Error fetching posts', err);
+      }
     });
   }
 
-  // Helper to point to your Spring Boot server port
   getMediaUrl(url: string): string {
-    if (!url) return '';
     return `http://localhost:8080${url}`;
+  }
+
+  // Toggle the comment section
+  toggleComments(postId: number) {
+    if (this.activeCommentPostId === postId) {
+      this.activeCommentPostId = null;
+      this.currentComments = [];
+    } else {
+      // Open and fetch comments
+      this.activeCommentPostId = postId;
+      this.newCommentText = ''; // Reset input
+      this.postService.getComments(postId).subscribe({
+        next: (res) => this.currentComments = res,
+        error: (err) => console.error('Error fetching comments', err)
+      });
+    }
+  }
+
+  submitComment(postId: number) {
+    if (!this.newCommentText.trim()) return;
+
+    this.postService.addComment(postId, this.newCommentText).subscribe({
+      next: (newComment) => {
+        // Add the new comment to the top of the list immediately
+        this.currentComments.unshift(newComment);
+        this.newCommentText = ''; // Clear input
+      },
+      error: (err) => alert('Failed to post comment')
+    });
   }
 }
