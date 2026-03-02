@@ -1,14 +1,17 @@
 import { Routes } from '@angular/router';
-import { LoginComponent } from './components/login/login.component';
-import { RegisterComponent } from './components/register/register.component';
-import { PostListComponent } from './components/post-list/post-list.component';
-import { PostCreateComponent } from './components/post-create/post-create.component';
+import { FeedComponent } from './features/feed/feed.component';
+import { LoginComponent } from './features/auth/login/login.component';
+import { RegisterComponent } from './features/auth/register/register.component';
+import { ProfileComponent } from './features/profile/profile.component';
+import { PostDetailComponent } from './features/post-detail/post-detail.component';
+import { authGuard } from './core/guards/auth-guard';
 
 export const routes: Routes = [
+    { path: '', redirectTo: '/feed', pathMatch: 'full' },
+    { path: 'feed', component: FeedComponent, canActivate: [authGuard] },
     { path: 'login', component: LoginComponent },
     { path: 'register', component: RegisterComponent },
-    { path: 'home', component: PostListComponent },
-    { path: 'create', component: PostCreateComponent },
-    { path: '', redirectTo: 'login', pathMatch: 'full' },
-    { path: '**', redirectTo: 'login' }
+    { path: 'user/:username', component: ProfileComponent, canActivate: [authGuard] },
+    { path: 'post/:id', component: PostDetailComponent, canActivate: [authGuard] },
+    { path: '**', redirectTo: '/feed' }
 ];

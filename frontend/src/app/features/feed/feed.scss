@@ -1,0 +1,94 @@
+.feed-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+.create-post-card {
+    background: #1e1e1e;
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 2.5rem;
+    border: 1px solid #333;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.post-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: #f3f4f6;
+    font-size: 1.1rem;
+    resize: none;
+    outline: none;
+    margin-bottom: 1rem;
+}
+
+.post-input::placeholder {
+    color: #a3a3a3;
+}
+
+.create-post-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #333;
+    padding-top: 1rem;
+}
+
+.file-input {
+    color: #a3a3a3;
+    font-size: 0.9rem;
+}
+
+.file-input::file-selector-button {
+    background: #3f3f46;
+    color: white;
+    border: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-right: 1rem;
+    transition: background 0.2s;
+}
+
+.file-input::file-selector-button:hover {
+    background: #52525b;
+}
+
+.submit-btn {
+    background: #dc2626;
+    color: white;
+    border: none;
+    padding: 0.5rem 1.5rem;
+    border-radius: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.submit-btn:hover:not(:disabled) {
+    background: #ef4444;
+}
+
+.submit-btn:disabled {
+    background: #7f1d1d;
+    color: #fca5a5;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.file-preview {
+    margin-top: 1rem;
+    font-size: 0.85rem;
+    color: #f87171;
+}
+
+.empty-feed {
+    text-align: center;
+    color: #a3a3a3;
+    padding: 3rem;
+    background: #1e1e1e;
+    border-radius: 12px;
+    border: 1px dashed #333;
+}

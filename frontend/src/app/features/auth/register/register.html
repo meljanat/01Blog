@@ -1,0 +1,34 @@
+<div class="auth-container">
+    <div class="auth-card">
+        <h2>Join <span class="accent">01Blog</span></h2>
+        <p class="subtitle">Create an account to start sharing your thoughts.</p>
+
+        <div *ngIf="errorMessage" class="error-banner">{{ errorMessage }}</div>
+        <div *ngIf="successMessage" class="success-banner">{{ successMessage }}</div>
+
+        <form (ngSubmit)="onSubmit()">
+            <div class="input-group">
+                <label>Username</label>
+                <input type="text" name="username" [(ngModel)]="userData.username" required
+                    placeholder="Choose a unique handle">
+            </div>
+
+            <div class="input-group">
+                <label>Email Address</label>
+                <input type="email" name="email" [(ngModel)]="userData.email" required placeholder="you@example.com">
+            </div>
+
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" name="password" [(ngModel)]="userData.password" required
+                    placeholder="Create a strong password">
+            </div>
+
+            <button type="submit" class="submit-btn">Create Account</button>
+
+            <div class="switch-page">
+                Already have an account? <a routerLink="/login">Log in here</a>
+            </div>
+        </form>
+    </div>
+</div>

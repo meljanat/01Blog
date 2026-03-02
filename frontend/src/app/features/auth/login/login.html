@@ -1,0 +1,27 @@
+<div class="auth-container">
+    <div class="auth-card">
+        <h2>Welcome back to <span class="accent">01Blog</span></h2>
+        <p class="subtitle">Enter your credentials to access your feed.</p>
+
+        <div *ngIf="errorMessage" class="error-banner">{{ errorMessage }}</div>
+
+        <form (ngSubmit)="onSubmit()">
+            <div class="input-group">
+                <label>Username</label>
+                <input type="text" name="username" [(ngModel)]="credentials.username" required placeholder="e.g. mouad">
+            </div>
+
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" name="password" [(ngModel)]="credentials.password" required
+                    placeholder="••••••••">
+            </div>
+
+            <button type="submit" class="submit-btn">Log In</button>
+
+            <div class="switch-page">
+                Don't have an account? <a routerLink="/register">Sign up here</a>
+            </div>
+        </form>
+    </div>
+</div>

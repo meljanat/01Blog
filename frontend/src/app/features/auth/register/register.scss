@@ -1,0 +1,13 @@
+@import '../login/login.scss';
+
+.success-banner {
+    color: #86efac;
+    background: #14532d;
+    border: 1px solid #166534;
+    padding: 0.75rem;
+    border-radius: 6px;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    font-size: 0.9rem;
+    font-weight: 500;
+}

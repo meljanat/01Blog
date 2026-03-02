@@ -1,0 +1,26 @@
+<div class="feed-container">
+
+    <div class="profile-header">
+        <div class="profile-avatar">{{ username.charAt(0) | uppercase }}</div>
+        <h1 class="profile-title"><span class="accent">{{ username }}'s</span> Profile</h1>
+        <p class="profile-subtitle">Joined the 01Blog network</p>
+    </div>
+
+    <div *ngIf="isLoading" class="empty-feed">
+        Loading posts...
+    </div>
+
+    <div *ngIf="!isLoading && posts.length === 0" class="empty-feed">
+        {{ username }} hasn't posted anything yet.
+    </div>
+
+    <div *ngIf="!isLoading">
+        <app-post-card *ngFor="let p of posts" [post]="p" [currentUser]="currentUser"
+            (postDeleted)="onPostDeleted($event)"> </app-post-card>
+    </div>
+
+    <div style="text-align: center; margin-top: 2rem;">
+        <a routerLink="/feed" class="back-link">← Back to Global Feed</a>
+    </div>
+
+</div>

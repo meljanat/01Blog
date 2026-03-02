@@ -1,0 +1,32 @@
+<div class="feed-container">
+
+    <div class="create-post-card">
+        <textarea [(ngModel)]="newPostText" placeholder="What's on your mind?" class="post-input" rows="3">
+      </textarea>
+
+        <div class="create-post-actions">
+            <input type="file" (change)="onFileSelected($event)" accept="image/*" class="file-input" #fileInput>
+            <button class="submit-btn" (click)="createPost()" [disabled]="!newPostText.trim()">
+                Post
+            </button>
+        </div>
+
+        <div *ngIf="selectedFile" class="file-preview">
+            Attached: {{ selectedFile.name }}
+        </div>
+    </div>
+
+    <div *ngIf="isLoading" class="empty-feed">
+        Loading your feed...
+    </div>
+
+    <div *ngIf="!isLoading && posts.length === 0" class="empty-feed">
+        No posts yet. Be the first to share something!
+    </div>
+
+    <div *ngIf="!isLoading">
+        <app-post-card *ngFor="let p of posts" [post]="p" [currentUser]="currentUser"
+            (postDeleted)="onPostDeleted($event)"> </app-post-card>
+    </div>
+
+</div>

@@ -1,0 +1,26 @@
+.feed-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+.back-link {
+    color: #a3a3a3;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.back-link:hover {
+    color: #dc2626;
+    text-decoration: underline;
+}
+
+.empty-feed {
+    text-align: center;
+    color: #a3a3a3;
+    padding: 3rem;
+    background: #1e1e1e;
+    border-radius: 12px;
+    border: 1px dashed #333;
+}

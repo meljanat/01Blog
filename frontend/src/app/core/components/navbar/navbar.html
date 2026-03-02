@@ -1,0 +1,16 @@
+<nav class="navbar">
+    <div class="nav-brand" routerLink="/feed">
+        <span class="logo-accent">01</span>Blog
+    </div>
+    <div class="nav-links">
+        <ng-container *ngIf="isLoggedIn(); else loggedOut">
+            <a routerLink="/feed" class="nav-item">Global Feed</a>
+            <button (click)="logout()" class="btn-logout">Log Out</button>
+        </ng-container>
+
+        <ng-template #loggedOut>
+            <a routerLink="/login" class="nav-item">Log In</a>
+            <a routerLink="/register" class="btn-primary">Sign Up</a>
+        </ng-template>
+    </div>
+</nav>

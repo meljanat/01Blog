@@ -1,0 +1,20 @@
+<div class="feed-container">
+
+    <div style="margin-bottom: 1.5rem;">
+        <a routerLink="/feed" class="back-link">← Back to Feed</a>
+    </div>
+
+    <div *ngIf="isLoading" class="empty-feed">
+        Loading post...
+    </div>
+
+    <div *ngIf="!isLoading && post">
+        <app-post-card [post]="post" [currentUser]="currentUser" [isDetailView]="true" (postDeleted)="onPostDeleted()">
+        </app-post-card>
+    </div>
+
+    <div *ngIf="!isLoading && !post" class="empty-feed">
+        Post not found or has been deleted.
+    </div>
+
+</div>

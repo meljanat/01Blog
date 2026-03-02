@@ -1,0 +1,58 @@
+@import '../feed/feed.scss';
+
+.profile-header {
+    background: #1e1e1e;
+    padding: 2rem;
+    border-radius: 12px;
+    border: 1px solid #333;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    margin-bottom: 2.5rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.profile-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-color: #b91c1c;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 10px rgba(220, 38, 38, 0.3);
+}
+
+.profile-title {
+    color: #f3f4f6;
+    font-size: 1.8rem;
+    font-weight: bold;
+    margin: 0 0 0.5rem 0;
+}
+
+.accent {
+    color: #dc2626;
+}
+
+.profile-subtitle {
+    color: #a3a3a3;
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+.back-link {
+    color: #a3a3a3;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.back-link:hover {
+    color: #dc2626;
+    text-decoration: underline;
+}
