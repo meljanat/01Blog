@@ -2,14 +2,20 @@ export interface Comment {
     id: number;
     text: string;
     createdAt: string;
-    author: { username: string };
+    author: {
+        username: string,
+        profilePictureUrl?: string;
+    };
 }
 
 export class Post {
     id: number;
     text: string;
     mediaUrl?: string;
-    author: { username: string };
+    author: {
+        username: string,
+        profilePictureUrl?: string;
+    };
     createdAt: string;
     likes: { username: string }[];
     comments: Comment[];

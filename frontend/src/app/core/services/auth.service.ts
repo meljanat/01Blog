@@ -13,7 +13,7 @@ export class AuthService {
     return this.http.post(`${this.apiUrl}/login`, credentials, { responseType: 'text' });
   }
 
-  register(userData: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/register`, userData, { responseType: 'text' });
+  register(formData: FormData): Observable<any> {
+    return this.http.post(`${this.apiUrl}/register`, formData, { responseType: 'text' });
   }
 }

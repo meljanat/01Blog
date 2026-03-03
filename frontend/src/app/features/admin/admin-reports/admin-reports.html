@@ -1,0 +1,50 @@
+<div class="dashboard-panel">
+    <div class="panel-header">
+        <h2>🚨 Unresolved Reports</h2>
+        <p class="subtitle">Review and manage user-submitted flags across the platform.</p>
+    </div>
+
+    <div *ngIf="isLoading" class="loading-state">Loading reports...</div>
+
+    <div *ngIf="!isLoading && reports.length === 0" class="empty-state">
+        <svg viewBox="0 0 24 24" width="48" height="48" stroke="currentColor" stroke-width="1.5" fill="none"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+        <p>All clear! There are no unresolved reports.</p>
+    </div>
+
+    <div class="table-container" *ngIf="!isLoading && reports.length > 0">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Date</th>
+                    <th>Reporter</th>
+                    <th>Target</th>
+                    <th>Reason</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let report of reports">
+                    <td class="id-cell">#{{ report.id }}</td>
+                    <td class="date-cell">{{ report.createdAt | date:'short' }}</td>
+                    <td><span class="reporter-name">@{{ report.reporter.username }}</span></td>
+                    <td>
+                        <span class="badge" [ngClass]="report.targetType.toLowerCase()">
+                            {{ report.targetType }} #{{ report.targetId }}
+                        </span>
+                    </td>
+                    <td class="reason-cell">{{ report.reason }}</td>
+                    <td>
+                        <button class="resolve-btn" (click)="resolveReport(report.id)">
+                            Resolve
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

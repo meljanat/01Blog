@@ -55,4 +55,14 @@ export class PostService {
       headers: { 'Content-Type': 'text/plain' }
     });
   }
+
+  editComment(postId: number, commentId: number, newText: string): Observable<Comment> {
+    return this.http.put<Comment>(`${this.apiUrl}/${postId}/comments/${commentId}`, newText, {
+      headers: { 'Content-Type': 'text/plain' }
+    });
+  }
+
+  deleteComment(postId: number, commentId: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${postId}/comments/${commentId}`, { responseType: 'text' });
+  }
 }

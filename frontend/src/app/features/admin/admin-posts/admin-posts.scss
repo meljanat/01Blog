@@ -1,0 +1,117 @@
+.dashboard-panel {
+    background: #1e1e1e;
+    border-radius: 12px;
+    border: 1px solid #333;
+    padding: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.panel-header {
+    margin-bottom: 2rem;
+}
+
+.panel-header h2 {
+    margin: 0 0 0.5rem 0;
+    color: #f3f4f6;
+    font-size: 1.8rem;
+}
+
+.subtitle {
+    margin: 0;
+    color: #a3a3a3;
+}
+
+.loading-state,
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #a3a3a3;
+}
+
+.table-container {
+    overflow-x: auto;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.admin-table th {
+    padding: 1rem;
+    color: #a3a3a3;
+    font-weight: 600;
+    border-bottom: 1px solid #333;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.admin-table td {
+    padding: 1rem;
+    color: #f3f4f6;
+    border-bottom: 1px solid #27272a;
+    vertical-align: middle;
+}
+
+.admin-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.id-cell {
+    color: #71717a;
+    font-family: monospace;
+}
+
+.date-cell {
+    font-size: 0.9rem;
+    color: #a3a3a3;
+}
+
+.author-name {
+    font-weight: bold;
+    color: #f3f4f6;
+}
+
+.content-cell {
+    color: #d4d4d8;
+    font-style: italic;
+    max-width: 250px;
+}
+
+.media-badge {
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: bold;
+}
+
+.media-badge.yes {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.media-badge.no {
+    background: rgba(113, 113, 122, 0.1);
+    color: #71717a;
+    border: 1px solid rgba(113, 113, 122, 0.2);
+}
+
+.force-delete-btn {
+    background: transparent;
+    color: #ef4444;
+    border: 1px solid #ef4444;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.force-delete-btn:hover {
+    background: #ef4444;
+    color: white;
+}

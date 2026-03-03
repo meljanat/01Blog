@@ -14,8 +14,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.security.Principal;
-
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/posts")
@@ -35,8 +36,16 @@ public class PostController {
     }
 
     @GetMapping
-    public List<Post> getAllPosts() {
-        return postRepository.findAllByOrderByCreatedAtDesc();
+    public ResponseEntity<List<Post>> getPersonalizedFeed(Principal principal) {
+        User currentUser = userRepository.findByUsername(principal.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Set<User> authorsToWatch = new HashSet<>(currentUser.getFollowing());
+        authorsToWatch.add(currentUser);
+
+        List<Post> feed = postRepository.findByAuthorInOrderByCreatedAtDesc(authorsToWatch);
+
+        return ResponseEntity.ok(feed);
     }
 
     @GetMapping("/{postId}")
@@ -112,6 +121,49 @@ public class PostController {
 
         postRepository.delete(post);
         return ResponseEntity.ok().body("Post deleted successfully");
+    }
+
+    @PutMapping("/{postId}/comments/{commentId}")
+    public ResponseEntity<?> editComment(@PathVariable Long postId, @PathVariable Long commentId,
+            @RequestBody String newText, Principal principal) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post not found"));
+
+        Comment comment = post.getComments().stream()
+                .filter(c -> c.getId().equals(commentId))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Comment not found"));
+
+        if (!comment.getAuthor().getUsername().equals(principal.getName())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You can only edit your own comments.");
+        }
+
+        comment.setText(newText);
+        postRepository.save(post);
+
+        return ResponseEntity.ok(comment);
+    }
+
+    @DeleteMapping("/{postId}/comments/{commentId}")
+    public ResponseEntity<?> deleteComment(@PathVariable Long postId, @PathVariable Long commentId,
+            Principal principal) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post not found"));
+
+        Comment comment = post.getComments().stream()
+                .filter(c -> c.getId().equals(commentId))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Comment not found"));
+
+        if (!comment.getAuthor().getUsername().equals(principal.getName()) &&
+                !post.getAuthor().getUsername().equals(principal.getName())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Not authorized to delete this comment.");
+        }
+
+        post.getComments().remove(comment);
+        postRepository.save(post);
+
+        return ResponseEntity.ok("Comment deleted successfully.");
     }
 
     @PostMapping

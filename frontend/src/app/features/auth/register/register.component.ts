@@ -18,23 +18,42 @@ export class RegisterComponent {
   userData = { username: '', email: '', password: '' };
   errorMessage = '';
   successMessage = '';
+  bio = '';
+  selectedFile: File | null = null;
+  previewUrl: string | ArrayBuffer | null = null;
+
+  onFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      this.selectedFile = file;
+
+      const reader = new FileReader();
+      reader.onload = (e) => this.previewUrl = reader.result;
+      reader.readAsDataURL(file);
+    }
+  }
 
   onSubmit() {
-    this.errorMessage = '';
-    this.successMessage = '';
+    // Build the FormData payload
+    const formData = new FormData();
+    formData.append('username', this.userData.username);
+    formData.append('email', this.userData.email);
+    formData.append('password', this.userData.password);
 
-    this.authService.register(this.userData).subscribe({
-      next: (response) => {
-        if (response.includes('Error')) {
-          this.errorMessage = response;
-        } else {
-          this.successMessage = 'Registration successful! Redirecting...';
-          setTimeout(() => this.router.navigate(['/login']), 1500);
-        }
+    if (this.bio.trim()) {
+      formData.append('bio', this.bio);
+    }
+
+    if (this.selectedFile) {
+      formData.append('file', this.selectedFile);
+    }
+
+    this.authService.register(formData).subscribe({
+      next: (res) => {
+        console.log('Registration successful', res);
+        this.router.navigate(['/login']);
       },
-      error: (err) => {
-        this.errorMessage = 'An error occurred during registration.';
-      }
+      error: (err) => console.error('Registration failed', err)
     });
   }
 }

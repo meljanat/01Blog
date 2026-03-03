@@ -1,0 +1,31 @@
+<div class="admin-container">
+
+    <aside class="admin-sidebar">
+        <div class="sidebar-header">
+            <h2>01Blog <span class="accent">Admin</span></h2>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a routerLink="/admin/reports" routerLinkActive="active" class="nav-item">
+                🚨 Unresolved Reports
+            </a>
+            <a routerLink="/admin/users" routerLinkActive="active" class="nav-item">
+                👥 Manage Users
+            </a>
+            <a routerLink="/admin/posts" routerLinkActive="active" class="nav-item">
+                📝 Manage Posts
+            </a>
+
+            <div class="divider"></div>
+
+            <a routerLink="/feed" class="nav-item back-home">
+                ← Back to App
+            </a>
+        </nav>
+    </aside>
+
+    <main class="admin-main">
+        <router-outlet></router-outlet>
+    </main>
+
+</div>

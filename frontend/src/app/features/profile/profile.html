@@ -1,26 +1,54 @@
 <div class="feed-container">
 
-    <div class="profile-header">
-        <div class="profile-avatar">{{ username.charAt(0) | uppercase }}</div>
-        <h1 class="profile-title"><span class="accent">{{ username }}'s</span> Profile</h1>
-        <p class="profile-subtitle">Joined the 01Blog network</p>
+    <div style="margin-bottom: 1.5rem;">
+        <a routerLink="/feed" class="back-link">← Back to Feed</a>
     </div>
 
-    <div *ngIf="isLoading" class="empty-feed">
-        Loading posts...
+    <div class="profile-header" *ngIf="userProfile">
+
+        <div class="profile-avatar">
+            <img *ngIf="userProfile.profilePictureUrl"
+                [src]="'http://localhost:8080/uploads/' + userProfile.profilePictureUrl" alt="Avatar"
+                class="avatar-img">
+            <span *ngIf="!userProfile.profilePictureUrl">
+                {{ userProfile.username.charAt(0) | uppercase }}
+            </span>
+        </div>
+
+        <div class="profile-info">
+            <h1 class="profile-title"><span class="accent">@</span>{{ userProfile.username }}</h1>
+            <p class="profile-bio" *ngIf="userProfile.bio">{{ userProfile.bio }}</p>
+
+            <div class="profile-stats">
+                <span class="stat"><strong>{{ userProfile.followersCount }}</strong> Followers</span>
+                <span class="stat"><strong>{{ userProfile.followingCount }}</strong> Following</span>
+            </div>
+
+            <div class="profile-actions" *ngIf="userProfile.username !== currentUser">
+                <button class="follow-btn"
+                    style="background: transparent; color: #ef4444; border: 1px solid #ef4444; margin-left: 0.5rem;"
+                    (click)="openReportModal()">
+                    Report User
+                </button>
+                <button class="follow-btn" [class.following]="userProfile.isFollowing" (click)="toggleFollow()">
+                    {{ userProfile.isFollowing ? 'Unfollow' : 'Follow' }}
+                </button>
+            </div>
+        </div>
+
     </div>
 
-    <div *ngIf="!isLoading && posts.length === 0" class="empty-feed">
-        {{ username }} hasn't posted anything yet.
-    </div>
+    <div *ngIf="isLoading" class="empty-feed">Loading profile...</div>
+    <div *ngIf="!isLoading && posts.length === 0" class="empty-feed">No posts yet.</div>
 
     <div *ngIf="!isLoading">
         <app-post-card *ngFor="let p of posts" [post]="p" [currentUser]="currentUser"
-            (postDeleted)="onPostDeleted($event)"> </app-post-card>
-    </div>
-
-    <div style="text-align: center; margin-top: 2rem;">
-        <a routerLink="/feed" class="back-link">← Back to Global Feed</a>
+            (postDeleted)="onPostDeleted($event)">
+        </app-post-card>
     </div>
 
 </div>
+
+<app-report-modal *ngIf="showReportModal" [targetType]="'USER'" [targetId]="userProfile!.id"
+    (closeModal)="closeReportModal()">
+</app-report-modal>

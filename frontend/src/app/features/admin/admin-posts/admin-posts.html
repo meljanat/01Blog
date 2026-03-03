@@ -1,0 +1,53 @@
+<div class="dashboard-panel">
+    <div class="panel-header">
+        <h2>📝 Manage Posts</h2>
+        <p class="subtitle">Global feed oversight. Admins can permanently remove content here.</p>
+    </div>
+
+    <div *ngIf="isLoading" class="loading-state">Loading posts...</div>
+
+    <div *ngIf="!isLoading && posts.length === 0" class="empty-state">
+        <p>No posts exist on the platform yet.</p>
+    </div>
+
+    <div class="table-container" *ngIf="!isLoading && posts.length > 0">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Date</th>
+                    <th>Author</th>
+                    <th>Content Snippet</th>
+                    <th>Media</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let post of posts">
+                    <td class="id-cell">#{{ post.id }}</td>
+                    <td class="date-cell">{{ post.createdAt | date:'short' }}</td>
+
+                    <td>
+                        <span class="author-name">@{{ post.author.username }}</span>
+                    </td>
+
+                    <td class="content-cell">
+                        "{{ (post.text && post.text.length > 50) ? (post.text | slice:0:50) + '...' : post.text }}"
+                    </td>
+
+                    <td>
+                        <span class="media-badge" [ngClass]="post.mediaUrl ? 'yes' : 'no'">
+                            {{ post.mediaUrl ? 'Image' : 'None' }}
+                        </span>
+                    </td>
+
+                    <td>
+                        <button class="force-delete-btn" (click)="deletePostAsAdmin(post.id)">
+                            Force Delete
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

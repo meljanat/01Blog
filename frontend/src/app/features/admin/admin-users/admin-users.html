@@ -1,0 +1,52 @@
+<div class="dashboard-panel">
+    <div class="panel-header">
+        <h2>👥 Manage Users</h2>
+        <p class="subtitle">Audit the registered members of the 01Blog platform.</p>
+    </div>
+
+    <div *ngIf="isLoading" class="loading-state">Loading users...</div>
+
+    <div class="table-container" *ngIf="!isLoading">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>User</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let user of users">
+                    <td class="id-cell">#{{ user.id }}</td>
+
+                    <td>
+                        <div class="user-cell">
+                            <div class="mini-avatar">
+                                <img *ngIf="user.profilePictureUrl"
+                                    [src]="'http://localhost:8080/uploads/' + user.profilePictureUrl" alt="Avatar">
+                                <span *ngIf="!user.profilePictureUrl">{{ user.username.charAt(0) | uppercase }}</span>
+                            </div>
+                            <span class="username-text">@{{ user.username }}</span>
+                        </div>
+                    </td>
+
+                    <td class="email-cell">{{ user.email }}</td>
+
+                    <td>
+                        <span class="role-badge" [ngClass]="user.role === 'ROLE_ADMIN' ? 'admin' : 'user'">
+                            {{ user.role.replace('ROLE_', '') }}
+                        </span>
+                    </td>
+
+                    <td>
+                        <a [routerLink]="['/user', user.username]" class="audit-link">
+                            Audit Profile
+                        </a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

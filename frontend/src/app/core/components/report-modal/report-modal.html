@@ -1,0 +1,28 @@
+<div class="modal-overlay" (click)="close()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+
+        <div class="modal-header">
+            <h2>Report {{ targetType | titlecase }}</h2>
+            <button class="close-btn" (click)="close()">&times;</button>
+        </div>
+
+        <div *ngIf="successMessage" class="success-alert">{{ successMessage }}</div>
+        <div *ngIf="errorMessage" class="error-alert">{{ errorMessage }}</div>
+
+        <div *ngIf="!successMessage" class="modal-body">
+            <p class="help-text">Please provide a specific reason for reporting this {{ targetType | lowercase }}. Our
+                admin team will review it shortly.</p>
+
+            <textarea [(ngModel)]="reason" rows="4" placeholder="Reason for reporting..." class="report-input">
+        </textarea>
+
+            <div class="modal-actions">
+                <button class="cancel-btn" (click)="close()" [disabled]="isSubmitting">Cancel</button>
+                <button class="submit-btn" (click)="submit()" [disabled]="!reason.trim() || isSubmitting">
+                    {{ isSubmitting ? 'Submitting...' : 'Submit Report' }}
+                </button>
+            </div>
+        </div>
+
+    </div>
+</div>

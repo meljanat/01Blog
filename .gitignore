@@ -1,0 +1,61 @@
+# ==========================================
+# Dependencies
+# ==========================================
+/node_modules/
+
+# ==========================================
+# Build outputs and Caches
+# ==========================================
+/dist/
+/tmp/
+/out-tsc/
+/bazel-out/
+
+# THIS IS THE MOST IMPORTANT ONE FOR WSL/WINDOWS
+# It prevents the corrupted cache from being pushed to GitHub
+/.angular/
+
+# ==========================================
+# Testing
+# ==========================================
+/coverage/
+
+# ==========================================
+# Environment Variables & Secrets
+# ==========================================
+# Never push your API keys or environment secrets
+.env
+.env.*
+
+# ==========================================
+# Logs
+# ==========================================
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ==========================================
+# OS Generated Files (Windows & Mac junk)
+# ==========================================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ==========================================
+# IDEs and Editors
+# ==========================================
+/.idea/
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# For VS Code: We ignore local workspace settings, 
+# but keep extensions.json if you want to recommend extensions to teammates
+/.vscode/*
+!/.vscode/extensions.json
+!/.vscode/settings.json
