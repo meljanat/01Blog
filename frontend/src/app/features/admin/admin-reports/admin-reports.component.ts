@@ -1,6 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AdminService } from '../../../core/services/admin.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-admin-reports',
@@ -11,6 +12,7 @@ import { AdminService } from '../../../core/services/admin.service';
 })
 export class AdminReportsComponent implements OnInit {
   private adminService = inject(AdminService);
+  private router = inject(Router);
 
   reports: any[] = [];
   isLoading: boolean = true;
@@ -40,6 +42,18 @@ export class AdminReportsComponent implements OnInit {
         },
         error: (err) => console.error('Failed to resolve report', err)
       });
+    }
+  }
+
+  inspectReportTarget(report: any) {
+    console.log(report);
+    
+    const type = report.targetType.toUpperCase();
+
+    if (type === 'POST') {
+      this.router.navigate(['/post', report.targetId]);
+    } else if (type === 'USER') {
+      this.router.navigate(['/user/', report.reported.username]);
     }
   }
 }

@@ -16,8 +16,9 @@
         </div>
 
         <div class="header-actions">
-            <ng-container *ngIf="post.author.username === currentUser">
-                <button *ngIf="!isEditing" class="icon-btn edit-btn" (click)="startEditing()" title="Edit Post">
+            <ng-container *ngIf="post.author.username === currentUser || isAdmin">
+                <button *ngIf="!isEditing && (isAdmin && post.author.username === currentUser)"
+                    class="icon-btn edit-btn" (click)="startEditing()" title="Edit Post">
                     <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"
                         stroke-linecap="round" stroke-linejoin="round">
                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
@@ -34,8 +35,8 @@
                 </button>
             </ng-container>
 
-            <button *ngIf="post.author.username !== currentUser" class="icon-btn report-btn" style="color: #ef4444;"
-                (click)="openReportModal('POST', post.id)" title="Report Post">
+            <button *ngIf="post.author.username !== currentUser && !isAdmin" class="icon-btn report-btn"
+                style="color: #ef4444;" (click)="openReportModal('POST', post.id)" title="Report Post">
                 <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
                     <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
                     <line x1="4" y1="22" x2="4" y2="15"></line>
@@ -57,7 +58,13 @@
     </div>
 
     <div *ngIf="post.mediaUrl" class="post-media">
-        <img [src]="'http://localhost:8080/uploads/' + post.mediaUrl" alt="Post attachment">
+        <video *ngIf="isVideo(post.mediaUrl)" controls class="media-content">
+            <source [src]="'http://localhost:8080/uploads/' + post.mediaUrl" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+
+        <img *ngIf="!isVideo(post.mediaUrl)" [src]="'http://localhost:8080/uploads/' + post.mediaUrl" alt="Post media"
+            class="media-content">
     </div>
 
     <div class="post-actions">
@@ -107,7 +114,7 @@
                             </button>
 
                             <button
-                                *ngIf="comment.author.username === currentUser || post.author.username === currentUser"
+                                *ngIf="comment.author.username === currentUser || post.author.username === currentUser || isAdmin"
                                 class="icon-btn mini-btn delete-btn" (click)="deleteComment(comment.id)" title="Delete">
                                 <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2"
                                     fill="none">
@@ -115,15 +122,6 @@
                                     <path
                                         d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
                                     </path>
-                                </svg>
-                            </button>
-
-                            <button *ngIf="comment.author.username !== currentUser" class="icon-btn mini-btn"
-                                style="color: #ef4444;" (click)="openReportModal('COMMENT', comment.id)" title="Report">
-                                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2"
-                                    fill="none">
-                                    <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
-                                    <line x1="4" y1="22" x2="4" y2="15"></line>
                                 </svg>
                             </button>
                         </div>

@@ -43,10 +43,12 @@ public class User {
     @ManyToMany
     @JoinTable(name = "user_followers", joinColumns = @JoinColumn(name = "follower_id"), inverseJoinColumns = @JoinColumn(name = "followed_id"))
     @JsonIgnore
+    @Builder.Default
     private Set<User> following = new HashSet<>();
 
     @ManyToMany(mappedBy = "following")
     @JsonIgnore
+    @Builder.Default
     private Set<User> followers = new HashSet<>();
 
     public void follow(User userToFollow) {

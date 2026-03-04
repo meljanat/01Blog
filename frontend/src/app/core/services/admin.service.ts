@@ -23,7 +23,15 @@ export class AdminService {
     return this.http.put(`${this.apiUrl}/reports/${reportId}/resolve`, {}, { responseType: 'text' });
   }
 
+  toggleBanUser(userId: number): Observable<any> {
+    return this.http.put(`${this.apiUrl}/users/${userId}/ban`, {}, { responseType: 'text' });
+  }
+
   deletePost(postId: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/posts/${postId}`, { responseType: 'text' });
+  }
+
+  deleteComment(commentId: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/comments/${commentId}`, { responseType: 'text' });
   }
 }

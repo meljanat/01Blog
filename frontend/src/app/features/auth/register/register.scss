@@ -23,18 +23,19 @@
     width: 100px;
     height: 100px;
     border-radius: 50%;
-    border: 2px dashed #3f3f46;
+    border: 2px dashed #404040;
+    background: #2d2d2d;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     overflow: hidden;
-    transition: border-color 0.2s;
-    background: #18181b;
+    transition: all 0.2s;
 }
 
 .avatar-preview-container:hover {
-    border-color: #3b82f6;
+    border-color: #dc2626;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15);
 }
 
 .avatar-preview {
@@ -45,7 +46,7 @@
 
 .avatar-placeholder {
     font-size: 2rem;
-    color: #52525b;
+    color: #737373;
 }
 
 .optional-text {
@@ -56,17 +57,24 @@
 
 textarea {
     width: 100%;
-    background: #18181b;
-    border: 1px solid #3f3f46;
+    box-sizing: border-box;
+    padding: 0.75rem 1rem;
+    border: 1px solid #404040;
+    background-color: #2d2d2d;
     color: #f3f4f6;
-    padding: 0.8rem;
-    border-radius: 8px;
+    border-radius: 6px;
     font-size: 1rem;
-    resize: vertical;
+    transition: all 0.2s;
     outline: none;
+    resize: vertical;
     font-family: inherit;
 }
 
+textarea::placeholder {
+    color: #737373;
+}
+
 textarea:focus {
-    border-color: #3b82f6;
+    border-color: #dc2626;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15);
 }

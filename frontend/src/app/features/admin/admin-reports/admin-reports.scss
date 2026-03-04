@@ -128,3 +128,13 @@
     background: #10b981;
     color: #18181b;
 }
+
+.target-btn {
+    cursor: pointer;
+    border: none;
+    transition: transform 0.2s;
+}
+
+.target-btn:hover {
+    transform: scale(1.05);
+}

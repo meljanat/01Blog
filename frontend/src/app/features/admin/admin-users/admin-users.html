@@ -14,7 +14,8 @@
                     <th>User</th>
                     <th>Email</th>
                     <th>Role</th>
-                    <th>Action</th>
+                    <th>Status</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -35,15 +36,24 @@
                     <td class="email-cell">{{ user.email }}</td>
 
                     <td>
-                        <span class="role-badge" [ngClass]="user.role === 'ROLE_ADMIN' ? 'admin' : 'user'">
-                            {{ user.role.replace('ROLE_', '') }}
+                        <span class="role-badge" [ngClass]="isAdmin(user) ? 'admin' : 'user'">
+                            {{ getRoleName(user) }}
                         </span>
                     </td>
 
                     <td>
-                        <a [routerLink]="['/user', user.username]" class="audit-link">
-                            Audit Profile
-                        </a>
+                        <span class="status-badge" [ngClass]="checkIsBanned(user) ? 'banned' : 'active'">
+                            {{ checkIsBanned(user) ? 'Banned' : 'Active' }}
+                        </span>
+                    </td>
+
+                    <td class="actions-cell">
+                        <a [routerLink]="['/user', user.username]" class="audit-link">Audit</a>
+
+                        <button *ngIf="!isAdmin(user)" class="ban-btn" [class.is-banned]="checkIsBanned(user)"
+                            (click)="toggleBan(user)">
+                            {{ checkIsBanned(user) ? 'Unban' : 'Ban User' }}
+                        </button>
                     </td>
                 </tr>
             </tbody>

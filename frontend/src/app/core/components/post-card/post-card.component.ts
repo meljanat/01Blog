@@ -29,10 +29,34 @@ export class PostCardComponent {
   editCommentText: string = '';
 
   showReportModal = false;
-  reportType: 'POST' | 'COMMENT' = 'POST';
+  reportType: 'POST' = 'POST';
   reportTargetId: number = 0;
 
-  openReportModal(type: 'POST' | 'COMMENT', id: number) {
+  isAdmin: boolean = false;
+
+  ngOnInit() {
+    this.checkIfAdmin();
+  }
+
+  checkIfAdmin() {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        this.isAdmin = JSON.stringify(payload.roles).includes('ROLE_ADMIN');
+      } catch (e) {
+        console.error('Error decoding token for admin check', e);
+      }
+    }
+  }
+
+  isVideo(mediaUrl: string | null): boolean {
+    if (!mediaUrl) return false;
+    const lowerUrl = mediaUrl.toLowerCase();
+    return lowerUrl.endsWith('.mp4') || lowerUrl.endsWith('.webm') || lowerUrl.endsWith('.ogg');
+  }
+
+  openReportModal(type: 'POST', id: number) {
     this.reportType = type;
     this.reportTargetId = id;
     this.showReportModal = true;

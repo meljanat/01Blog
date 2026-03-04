@@ -14,24 +14,27 @@ import org.springframework.web.bind.annotation.RestController;
 import com.blog.api.model.Post;
 import com.blog.api.model.Report;
 import com.blog.api.model.User;
-import com.blog.api.repository.PostRepository;
 import com.blog.api.repository.ReportRepository;
 import com.blog.api.repository.UserRepository;
+import com.blog.api.repository.PostRepository;
+import com.blog.api.repository.CommentRepository;
 
 @RestController
 @RequestMapping("/api/admin")
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
 
+    private final ReportRepository reportRepository;
     private final UserRepository userRepository;
     private final PostRepository postRepository;
-    private final ReportRepository reportRepository;
+    private final CommentRepository commentRepository;
 
-    public AdminController(UserRepository userRepository, PostRepository postRepository,
-            ReportRepository reportRepository) {
+    public AdminController(ReportRepository reportRepository, UserRepository userRepository,
+            PostRepository postRepository, CommentRepository commentRepository) {
+        this.reportRepository = reportRepository;
         this.userRepository = userRepository;
         this.postRepository = postRepository;
-        this.reportRepository = reportRepository;
+        this.commentRepository = commentRepository;
     }
 
     @GetMapping("/users")
@@ -60,12 +63,53 @@ public class AdminController {
         return ResponseEntity.ok("Report marked as resolved.");
     }
 
+    @PutMapping("/users/{id}/ban")
+    public ResponseEntity<?> toggleUserBan(@PathVariable Long id) {
+        if (id == 1) {
+            return ResponseEntity.badRequest().body("You cannot ban the owner.");
+        }
+
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        user.setIsBanned(!user.getIsBanned());
+        userRepository.save(user);
+
+        String message = user.getIsBanned() ? "User has been successfully banned." : "User has been unbanned.";
+        return ResponseEntity.ok(message);
+    }
+
+    @DeleteMapping("/users/{id}")
+    public ResponseEntity<?> deleteUserAsAdmin(@PathVariable Long id) {
+        if (id == 1) {
+            return ResponseEntity.badRequest().body("You cannot delete the owner.");
+        }
+
+        if (!userRepository.existsById(id)) {
+            return ResponseEntity.badRequest().body("User not found");
+        }
+
+        userRepository.deleteById(id);
+        return ResponseEntity.ok("User deleted by Admin.");
+    }
+
     @DeleteMapping("/posts/{id}")
     public ResponseEntity<?> deletePostAsAdmin(@PathVariable Long id) {
         if (!postRepository.existsById(id)) {
             return ResponseEntity.badRequest().body("Post not found");
         }
+
         postRepository.deleteById(id);
         return ResponseEntity.ok("Post deleted by Admin.");
+    }
+
+    @DeleteMapping("/comments/{id}")
+    public ResponseEntity<?> deleteCommentAsAdmin(@PathVariable Long id) {
+        if (!commentRepository.existsById(id)) {
+            return ResponseEntity.badRequest().body("Comment not found");
+        }
+
+        commentRepository.deleteById(id);
+        return ResponseEntity.ok("Comment deleted by Admin.");
     }
 }

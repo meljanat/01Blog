@@ -119,15 +119,65 @@
     border: 1px solid rgba(161, 161, 170, 0.2);
 }
 
+.status-badge {
+    padding: 0.3rem 0.6rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: bold;
+}
+
+.status-badge.active {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.status-badge.banned {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.actions-cell {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
 .audit-link {
     color: #3b82f6;
     text-decoration: none;
-    font-size: 0.9rem;
-    font-weight: 500;
-    transition: color 0.2s;
+    font-size: 0.85rem;
+    font-weight: bold;
 }
 
 .audit-link:hover {
-    color: #60a5fa;
     text-decoration: underline;
+}
+
+.ban-btn {
+    background: transparent;
+    color: #ef4444;
+    border: 1px solid #ef4444;
+    padding: 0.3rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.ban-btn:hover {
+    background: #ef4444;
+    color: white;
+}
+
+.ban-btn.is-banned {
+    color: #a3a3a3;
+    border-color: #52525b;
+}
+
+.ban-btn.is-banned:hover {
+    background: #52525b;
+    color: white;
 }

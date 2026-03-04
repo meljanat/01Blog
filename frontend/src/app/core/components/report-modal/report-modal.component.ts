@@ -11,7 +11,7 @@ import { ReportService } from '../../services/report.service';
   styleUrls: ['./report-modal.scss']
 })
 export class ReportModalComponent {
-  @Input({ required: true }) targetType!: 'USER' | 'POST' | 'COMMENT';
+  @Input({ required: true }) targetType!: 'USER' | 'POST';
   @Input({ required: true }) targetId!: number;
   @Output() closeModal = new EventEmitter<void>();
 

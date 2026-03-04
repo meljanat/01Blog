@@ -33,9 +33,10 @@
                     <td class="date-cell">{{ report.createdAt | date:'short' }}</td>
                     <td><span class="reporter-name">@{{ report.reporter.username }}</span></td>
                     <td>
-                        <span class="badge" [ngClass]="report.targetType.toLowerCase()">
-                            {{ report.targetType }} #{{ report.targetId }}
-                        </span>
+                        <button class="target-btn badge" [ngClass]="report.targetType.toLowerCase()"
+                            (click)="inspectReportTarget(report)" title="Click to inspect this content">
+                            {{ report.targetType }} #{{ report.targetId }} 🔗
+                        </button>
                     </td>
                     <td class="reason-cell">{{ report.reason }}</td>
                     <td>

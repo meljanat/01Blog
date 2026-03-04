@@ -1,0 +1,23 @@
+<div class="modal-overlay" *ngIf="data" (click)="close()">
+
+    <div class="modal-card" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h3>{{ data.title }}</h3>
+        </div>
+
+        <div class="modal-body">
+            <p>{{ data.message }}</p>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn-cancel" (click)="close()">
+                {{ data.cancelText || 'Cancel' }}
+            </button>
+
+            <button class="btn-confirm" [ngClass]="{'danger': data.isDanger !== false}" (click)="confirm()">
+                {{ data.confirmText || 'Confirm' }}
+            </button>
+        </div>
+    </div>
+
+</div>

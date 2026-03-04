@@ -123,19 +123,19 @@
     }
 
     .post-media {
-        margin-top: 1rem;
+        margin: 1rem 0;
         border-radius: 8px;
         overflow: hidden;
-        max-height: 500px;
+        background: #000;
         display: flex;
         justify-content: center;
-        background: #000;
+    }
 
-        img {
-            max-width: 100%;
-            max-height: 500px;
-            object-fit: contain;
-        }
+    .media-content {
+        max-width: 100%;
+        max-height: 500px;
+        object-fit: contain;
+        display: block;
     }
 
     // ==========================================

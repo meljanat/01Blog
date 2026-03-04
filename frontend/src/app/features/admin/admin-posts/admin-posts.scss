@@ -115,3 +115,22 @@
     background: #ef4444;
     color: white;
 }
+
+.actions-cell {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.view-link {
+    color: #3b82f6;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 0.9rem;
+    transition: color 0.2s;
+}
+
+.view-link:hover {
+    color: #60a5fa;
+    text-decoration: underline;
+}

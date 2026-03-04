@@ -1,11 +1,12 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AdminService } from '../../../core/services/admin.service';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-admin-posts',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './admin-posts.html',
   styleUrls: ['./admin-posts.scss']
 })

@@ -1,9 +1,13 @@
 package com.blog.api.controller;
 
+import java.io.IOException;
+
 import com.blog.api.model.Comment;
 import com.blog.api.model.Post;
 import com.blog.api.model.User;
+import com.blog.api.model.Notification;
 import com.blog.api.repository.CommentRepository;
+import com.blog.api.repository.NotificationRepository;
 import com.blog.api.repository.PostRepository;
 import com.blog.api.repository.UserRepository;
 import com.blog.api.service.FileStorageService;
@@ -13,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
 import java.security.Principal;
 import java.util.HashSet;
 import java.util.List;
@@ -26,13 +31,16 @@ public class PostController {
     private final PostRepository postRepository;
     private final FileStorageService fileStorageService;
     private final CommentRepository commentRepository;
+    private final NotificationRepository notificationRepository;
 
     public PostController(PostRepository postRepository, UserRepository userRepository,
-            FileStorageService fileStorageService, CommentRepository commentRepository) {
+            FileStorageService fileStorageService, CommentRepository commentRepository,
+            NotificationRepository notificationRepository) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
         this.fileStorageService = fileStorageService;
         this.commentRepository = commentRepository;
+        this.notificationRepository = notificationRepository;
     }
 
     @GetMapping
@@ -192,9 +200,21 @@ public class PostController {
                     .build();
 
             postRepository.save(post);
-            return ResponseEntity.ok(post);
 
-        } catch (Exception e) {
+            if (author.getFollowers() != null && !author.getFollowers().isEmpty()) {
+                for (User follower : author.getFollowers()) {
+                    Notification notification = Notification.builder()
+                            .recipient(follower)
+                            .actor(author)
+                            .message("published a new post.")
+                            .postId(post.getId())
+                            .build();
+                    notificationRepository.save(notification);
+                }
+            }
+
+            return ResponseEntity.ok(post);
+        } catch (IOException e) {
             return ResponseEntity.badRequest().body("Error creating post: " + e.getMessage());
         }
     }

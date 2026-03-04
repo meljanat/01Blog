@@ -1,11 +1,14 @@
 package com.blog.api.controller;
 
+import java.io.IOException;
 import java.util.Map;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -47,6 +50,7 @@ public class AuthController {
             @RequestParam("password") String password,
             @RequestParam(value = "bio", required = false) String bio,
             @RequestParam(value = "file", required = false) MultipartFile file) {
+        username = username.toLowerCase();
 
         try {
             if (userRepository.existsByUsername(username)) {
@@ -57,13 +61,11 @@ public class AuthController {
                 return ResponseEntity.badRequest().body("Error: Email is already in use!");
             }
 
-            // Handle the optional profile picture
             String profilePicUrl = null;
             if (file != null && !file.isEmpty()) {
                 profilePicUrl = fileStorageService.saveFile(file);
             }
 
-            // Create the new user
             User user = new User();
             user.setUsername(username);
             user.setEmail(email);
@@ -82,7 +84,7 @@ public class AuthController {
 
             return ResponseEntity.ok("User registered successfully!");
 
-        } catch (Exception e) {
+        } catch (IOException e) {
             return ResponseEntity.badRequest().body("Error during registration: " + e.getMessage());
         }
     }
@@ -94,12 +96,20 @@ public class AuthController {
                     new UsernamePasswordAuthenticationToken(loginRequest.get("username"),
                             loginRequest.get("password")));
 
+            User user = userRepository.findByUsername(loginRequest.get("username"))
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            if (user.getIsBanned()) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body("Your account has been banned by an administrator.");
+            }
+
             SecurityContextHolder.getContext().setAuthentication(authentication);
             String jwt = jwtUtils.generateJwtToken(authentication);
 
             return ResponseEntity.ok(jwt);
 
-        } catch (Exception e) {
+        } catch (AuthenticationException e) {
             return ResponseEntity.badRequest().body("Error: Invalid username or password");
         }
     }

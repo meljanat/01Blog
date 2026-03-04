@@ -5,7 +5,8 @@
       </textarea>
 
         <div class="create-post-actions">
-            <input type="file" (change)="onFileSelected($event)" accept="image/*" class="file-input" #fileInput>
+            <input type="file" (change)="onFileSelected($event)" accept="image/*,video/mp4,video/webm"
+                class="file-input" #fileInput>
             <button class="submit-btn" (click)="createPost()" [disabled]="!newPostText.trim()">
                 Post
             </button>

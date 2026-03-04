@@ -34,7 +34,6 @@ export class RegisterComponent {
   }
 
   onSubmit() {
-    // Build the FormData payload
     const formData = new FormData();
     formData.append('username', this.userData.username);
     formData.append('email', this.userData.email);

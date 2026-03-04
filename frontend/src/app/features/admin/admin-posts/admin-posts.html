@@ -19,7 +19,7 @@
                     <th>Author</th>
                     <th>Content Snippet</th>
                     <th>Media</th>
-                    <th>Action</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -32,16 +32,20 @@
                     </td>
 
                     <td class="content-cell">
-                        "{{ (post.text && post.text.length > 50) ? (post.text | slice:0:50) + '...' : post.text }}"
+                        "{{ (post.text && post.text.length > 50) ? (post.text | slice:0:50) + '...' : (post.text || 'No
+                        text') }}"
                     </td>
 
                     <td>
                         <span class="media-badge" [ngClass]="post.mediaUrl ? 'yes' : 'no'">
-                            {{ post.mediaUrl ? 'Image' : 'None' }}
+                            {{ post.mediaUrl ? 'Media' : 'None' }}
                         </span>
                     </td>
 
-                    <td>
+                    <td class="actions-cell">
+                        <a [routerLink]="['/post', post.id]" class="view-link">
+                            View
+                        </a>
                         <button class="force-delete-btn" (click)="deletePostAsAdmin(post.id)">
                             Force Delete
                         </button>
