@@ -1,247 +1,344 @@
-$bg-dark: #121212;
-$bg-panel: #1e1e1e;
-$border-color: #333;
-$text-light: #f3f4f6;
-$text-muted: #a3a3a3;
-$accent-red: #ef4444;
-$accent-blue: #3b82f6;
-
+/* =========================================
+   1. MAIN NAVBAR LAYOUT
+   ========================================= */
 .navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 1rem 2rem;
-    background-color: $bg-panel;
-    border-bottom: 1px solid $border-color;
+    background: #0a0a0a;
+    border-bottom: 1px solid #2a1111;
     position: sticky;
     top: 0;
-    z-index: 900;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    z-index: 999;
+}
 
-    .navbar-brand {
-        .brand-link {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: $text-light;
-            text-decoration: none;
-            letter-spacing: 0.05em;
-
-            .brand-number {
-                color: $accent-red;
-            }
-        }
-    }
-
-    .navbar-menu {
+.nav-brand {
+    .brand-link {
+        text-decoration: none;
         display: flex;
         align-items: center;
-        gap: 1.5rem;
+    }
 
-        .nav-link {
-            color: $text-muted;
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 0.95rem;
-            transition: color 0.2s;
+    .brand-text {
+        font-size: 1.5rem;
+        font-weight: 900;
+        color: #f3f4f6;
+        letter-spacing: -0.5px;
+        text-transform: uppercase;
+        text-shadow: 0 0 10px rgba(220, 38, 38, 0.3);
+    }
+}
 
-            &:hover {
-                color: $text-light;
-            }
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
 
-            &.active {
-                color: $accent-red;
-                font-weight: bold;
-            }
+/* =========================================
+   2. LINKS & BUTTONS
+   ========================================= */
+.nav-link {
+    color: #a3a3a3;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    position: relative;
 
-            &.admin-link {
-                color: #f59e0b;
+    &:hover {
+        color: #dc2626;
+    }
 
-                &:hover {
-                    color: #fbbf24;
-                }
+    &.active {
+        color: #f3f4f6;
+        font-weight: 700;
 
-                &.active {
-                    border-bottom: 2px solid #f59e0b;
-                }
-            }
+        &::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 2px;
+            background-color: #dc2626;
+            border-radius: 2px;
+            box-shadow: 0 0 8px rgba(220, 38, 38, 0.8);
+        }
+    }
+}
+
+.admin-link {
+    color: #fbbf24;
+
+    &:hover {
+        color: #f59e0b;
+    }
+
+    &.active {
+        color: #fcd34d;
+
+        &::after {
+            background-color: #f59e0b;
+            box-shadow: 0 0 8px rgba(245, 158, 11, 0.8);
+        }
+    }
+}
+
+.btn-primary {
+    background: #dc2626;
+    color: white;
+    text-decoration: none;
+    padding: 0.5rem 1.25rem;
+    border-radius: 4px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    border: 1px solid #dc2626;
+
+    &:hover {
+        background: #991b1b;
+        border-color: #991b1b;
+        box-shadow: 0 0 15px rgba(220, 38, 38, 0.4);
+    }
+}
+
+.btn-logout {
+    background: transparent;
+    color: #737373;
+    border: 1px solid #333;
+    padding: 0.4rem 1rem;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+        background: rgba(220, 38, 38, 0.1);
+        color: #dc2626;
+        border-color: #dc2626;
+    }
+}
+
+/* =========================================
+   3. NOTIFICATIONS WRAPPER & ICON
+   ========================================= */
+.notification-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.nav-icon-btn {
+    background: transparent;
+    border: none;
+    font-size: 1.4rem;
+    cursor: pointer;
+    position: relative;
+    padding: 0.4rem;
+    color: #a3a3a3;
+    transition: all 0.2s ease;
+
+    &:hover {
+        color: #f3f4f6;
+        transform: scale(1.1);
+    }
+}
+
+.badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: #dc2626;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: bold;
+    border-radius: 50%;
+    min-width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #0a0a0a;
+}
+
+/* =========================================
+   4. DROPDOWN & ANIMATION
+   ========================================= */
+.notification-dropdown {
+    position: absolute;
+    top: 130%;
+    right: -10px;
+    width: 360px;
+    background: #141414;
+    border: 1px solid #3f1515;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    overflow: hidden;
+
+    animation: slideDownFade 0.2s ease-out forwards;
+    transform-origin: top right;
+}
+
+@keyframes slideDownFade {
+    from {
+        opacity: 0;
+        transform: translateY(-10px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.dropdown-header {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #2a1111;
+    background: #0f0f0f;
+
+    h4 {
+        margin: 0;
+        color: #f3f4f6;
+        font-size: 1.05rem;
+        font-weight: bold;
+    }
+}
+
+/* =========================================
+   5. NOTIFICATION ITEMS
+   ========================================= */
+.dropdown-body {
+    max-height: 400px;
+    overflow-y: auto;
+
+    &::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: #141414;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: #3f1515;
+        border-radius: 4px;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+        background: #dc2626;
+    }
+}
+
+.empty-notifications {
+    padding: 2.5rem 1rem;
+    text-align: center;
+    color: #737373;
+    font-size: 0.95rem;
+}
+
+.notification-item {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    text-decoration: none;
+    border-bottom: 1px solid #1f1f1f;
+    transition: background 0.2s ease;
+    color: #a3a3a3;
+    gap: 1rem;
+    cursor: pointer;
+
+    &:last-child {
+        border-bottom: none;
+    }
+
+    &:hover {
+        background: #1a1a1a;
+    }
+
+    &.unread {
+        background: rgba(220, 38, 38, 0.05);
+        /* Very subtle red tint */
+        color: #d1d5db;
+        border-left: 3px solid #dc2626;
+        /* Red accent bar on the left */
+
+        strong {
+            color: #ffffff;
         }
 
-        // ==========================================
-        // Notification System Styles
-        // ==========================================
-        .notification-wrapper {
-            position: relative;
-            display: inline-block;
-
-            .bell-btn {
-                background: transparent;
-                border: none;
-                color: $text-muted;
-                cursor: pointer;
-                position: relative;
-                padding: 0.5rem;
-                transition: color 0.2s;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-
-                &:hover {
-                    color: $text-light;
-                }
-
-                .unread-badge {
-                    position: absolute;
-                    top: 2px;
-                    right: 2px;
-                    background-color: $accent-red;
-                    color: white;
-                    font-size: 0.65rem;
-                    font-weight: bold;
-                    padding: 0.1rem 0.3rem;
-                    border-radius: 10px;
-                    border: 2px solid $bg-panel;
-                    min-width: 16px;
-                    text-align: center;
-                }
-            }
-
-            .notification-dropdown {
-                position: absolute;
-                top: 120%;
-                right: -10px;
-                width: 320px;
-                background: $bg-panel;
-                border: 1px solid $border-color;
-                border-radius: 12px;
-                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-                z-index: 1000;
-                overflow: hidden;
-                animation: slideDown 0.2s ease-out;
-
-                @keyframes slideDown {
-                    from {
-                        opacity: 0;
-                        transform: translateY(-10px);
-                    }
-
-                    to {
-                        opacity: 1;
-                        transform: translateY(0);
-                    }
-                }
-
-                .dropdown-header {
-                    padding: 1rem;
-                    border-bottom: 1px solid $border-color;
-                    background: #18181b;
-
-                    h3 {
-                        margin: 0;
-                        font-size: 1.1rem;
-                        color: $text-light;
-                    }
-                }
-
-                .dropdown-body {
-                    max-height: 400px;
-                    overflow-y: auto;
-
-                    .empty-notifications {
-                        padding: 2rem 1rem;
-                        text-align: center;
-                        color: $text-muted;
-                        font-size: 0.9rem;
-                    }
-
-                    .notification-item {
-                        display: flex;
-                        align-items: center;
-                        gap: 1rem;
-                        padding: 1rem;
-                        border-bottom: 1px solid #27272a;
-                        cursor: pointer;
-                        transition: background 0.2s;
-
-                        &:hover {
-                            background: #27272a;
-                        }
-
-                        &.unread {
-                            background: rgba(59, 130, 246, 0.05);
-                        }
-
-                        .notif-avatar {
-                            width: 40px;
-                            height: 40px;
-                            border-radius: 50%;
-                            background: $accent-red;
-                            flex-shrink: 0;
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            color: white;
-                            font-weight: bold;
-                            overflow: hidden;
-
-                            img {
-                                width: 100%;
-                                height: 100%;
-                                object-fit: cover;
-                            }
-                        }
-
-                        .notif-content {
-                            flex: 1;
-
-                            p {
-                                margin: 0 0 0.2rem 0;
-                                font-size: 0.9rem;
-                                color: #d4d4d8;
-                                line-height: 1.3;
-
-                                .actor-name {
-                                    font-weight: bold;
-                                    color: $text-light;
-                                }
-                            }
-
-                            .notif-time {
-                                font-size: 0.75rem;
-                                color: #71717a;
-                            }
-                        }
-
-                        .unread-dot {
-                            width: 8px;
-                            height: 8px;
-                            background-color: $accent-blue;
-                            border-radius: 50%;
-                            flex-shrink: 0;
-                        }
-                    }
-                }
-            }
+        .status-dot {
+            background: #dc2626;
+            border-color: #dc2626;
+            box-shadow: 0 0 8px rgba(220, 38, 38, 0.6);
         }
+    }
+}
 
-        // ==========================================
-        // Logout Button
-        // ==========================================
-        .logout-btn {
-            background: transparent;
-            color: $text-muted;
-            border: 1px solid $border-color;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 0.9rem;
+.notif-content {
+    flex: 1;
+    font-size: 0.9rem;
+    line-height: 1.4;
 
-            &:hover {
-                background: #27272a;
-                color: $text-light;
-                border-color: #52525b;
-            }
-        }
+    strong {
+        color: #f3f4f6;
+        font-weight: 600;
+    }
+}
+
+/* =========================================
+   6. TOGGLE RED DOT
+   ========================================= */
+.toggle-read-btn {
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 4px;
+    position: relative;
+
+    &::before {
+        content: '';
+        position: absolute;
+        top: -10px;
+        left: -10px;
+        right: -10px;
+        bottom: -10px;
+    }
+}
+
+.status-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid #5c1a1a;
+    background: transparent;
+    transition: all 0.2s ease;
+}
+
+/* =========================================
+   7. MOBILE RESPONSIVENESS
+   ========================================= */
+@media (max-width: 768px) {
+    .nav-actions {
+        gap: 1rem;
+    }
+
+    .nav-link,
+    .admin-link {
+        display: none;
+    }
+
+    .notification-dropdown {
+        position: fixed;
+        top: 70px;
+        left: 10px;
+        right: 10px;
+        width: auto;
     }
 }

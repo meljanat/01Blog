@@ -1,15 +1,35 @@
-.feed-container {
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 2rem 1rem;
+/* =========================================
+   1. MAIN LAYOUT
+   ========================================= */
+.feed-layout {
+    display: flex;
+    gap: 2rem;
+    max-width: 1000px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    align-items: flex-start;
 }
 
+.main-feed {
+    flex: 1;
+    min-width: 0;
+}
+
+.feed-sidebar {
+    width: 320px;
+    position: sticky;
+    top: 2rem;
+}
+
+/* =========================================
+   2. CREATE POST CARD
+   ========================================= */
 .create-post-card {
     background: #1e1e1e;
-    padding: 1.5rem;
-    border-radius: 12px;
-    margin-bottom: 2.5rem;
     border: 1px solid #333;
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 2rem;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
 }
 
@@ -22,10 +42,10 @@
     resize: none;
     outline: none;
     margin-bottom: 1rem;
-}
 
-.post-input::placeholder {
-    color: #a3a3a3;
+    &::placeholder {
+        color: #737373;
+    }
 }
 
 .create-post-actions {
@@ -36,24 +56,22 @@
     padding-top: 1rem;
 }
 
-.file-input {
-    color: #a3a3a3;
-    font-size: 0.9rem;
+.hidden-file-input {
+    display: none;
 }
 
-.file-input::file-selector-button {
-    background: #3f3f46;
-    color: white;
-    border: none;
-    padding: 0.4rem 0.8rem;
-    border-radius: 6px;
+.upload-label {
+    color: #dc2626;
+    font-weight: bold;
+    font-size: 0.95rem;
     cursor: pointer;
-    margin-right: 1rem;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
     transition: background 0.2s;
-}
 
-.file-input::file-selector-button:hover {
-    background: #52525b;
+    &:hover {
+        background: rgba(59, 130, 246, 0.1);
+    }
 }
 
 .submit-btn {
@@ -64,31 +82,196 @@
     border-radius: 20px;
     font-weight: bold;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: all 0.2s;
+
+    &:hover:not(:disabled) {
+        background: #2563eb;
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
 }
 
-.submit-btn:hover:not(:disabled) {
-    background: #ef4444;
+.file-preview-area {
+    background: #27272a;
+    padding: 0.75rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    color: #a3a3a3;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
 }
 
-.submit-btn:disabled {
-    background: #7f1d1d;
-    color: #fca5a5;
-    cursor: not-allowed;
-    opacity: 0.7;
+/* =========================================
+   3. POSTS LIST & STATES
+   ========================================= */
+.posts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
 }
 
-.file-preview {
-    margin-top: 1rem;
-    font-size: 0.85rem;
-    color: #f87171;
-}
-
-.empty-feed {
+.empty-state,
+.loading-state {
     text-align: center;
     color: #a3a3a3;
-    padding: 3rem;
+    padding: 2rem;
     background: #1e1e1e;
     border-radius: 12px;
-    border: 1px dashed #333;
+    border: 1px dashed #404040;
+    margin-top: 1rem;
+}
+
+/* =========================================
+   4. SUGGESTIONS SIDEBAR
+   ========================================= */
+.suggestions-card {
+    background: #1e1e1e;
+    border: 1px solid #333;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.suggestions-title {
+    font-size: 1.1rem;
+    color: #f3f4f6;
+    margin: 0;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #27272a;
+    font-weight: bold;
+}
+
+.suggestion-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    text-decoration: none;
+    transition: background 0.2s;
+    border-bottom: 1px solid #27272a;
+
+    &:last-child {
+        border-bottom: none;
+    }
+
+    &:hover {
+        background: #27272a;
+    }
+}
+
+.suggestion-avatar {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+
+    img,
+    .avatar-placeholder {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .avatar-placeholder {
+        background: #dc2626;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+    }
+}
+
+.suggestion-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.suggestion-username {
+    color: #f3f4f6;
+    font-weight: 600;
+    font-size: 0.95rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.suggestion-bio {
+    color: #a3a3a3;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.btn-follow-small {
+    background: #f3f4f6;
+    color: #18181b;
+    border: none;
+    border-radius: 20px;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+
+    &:hover {
+        background: #d1d5db;
+    }
+}
+
+/* =========================================
+   INFINITE SCROLL STATUS
+   ========================================= */
+.scroll-status {
+    text-align: center;
+    padding: 2rem;
+    color: #a3a3a3;
+    font-size: 0.95rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.end-message {
+    color: #737373;
+    border-top: 1px dashed #2a1111;
+    margin-top: 1rem;
+}
+
+.red-spinner {
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(220, 38, 38, 0.2);
+    border-radius: 50%;
+    border-top-color: #dc2626;
+    /* Bright Red */
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (max-width: 850px) {
+    .feed-layout {
+        flex-direction: column;
+    }
+
+    .feed-sidebar {
+        width: 100%;
+        position: static;
+        order: -1;
+        margin-bottom: 1rem;
+    }
 }

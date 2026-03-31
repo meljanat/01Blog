@@ -1,54 +1,126 @@
-<div class="feed-container">
-
-    <div style="margin-bottom: 1.5rem;">
-        <a routerLink="/feed" class="back-link">← Back to Feed</a>
-    </div>
-
-    <div class="profile-header" *ngIf="userProfile">
-
-        <div class="profile-avatar">
+<div class="profile-container" *ngIf="userProfile">
+    <div class="profile-header">
+        <div class="avatar-container">
             <img *ngIf="userProfile.profilePictureUrl"
-                [src]="'http://localhost:8080/uploads/' + userProfile.profilePictureUrl" alt="Avatar"
-                class="avatar-img">
-            <span *ngIf="!userProfile.profilePictureUrl">
-                {{ userProfile.username.charAt(0) | uppercase }}
-            </span>
+                [src]="'http://localhost:8080/uploads/' + userProfile.profilePictureUrl" alt="Avatar" class="avatar">
+            <div *ngIf="!userProfile.profilePictureUrl" class="avatar-placeholder">
+                {{ userProfile.username.charAt(0).toUpperCase() }}
+            </div>
         </div>
 
         <div class="profile-info">
-            <h1 class="profile-title"><span class="accent">@</span>{{ userProfile.username }}</h1>
-            <p class="profile-bio" *ngIf="userProfile.bio">{{ userProfile.bio }}</p>
+            <h2>{{ userProfile.username }}</h2>
+            <p class="bio">{{ userProfile.bio || 'This user has no bio yet.' }}</p>
 
             <div class="profile-stats">
                 <span class="stat"><strong>{{ userProfile.followersCount }}</strong> Followers</span>
                 <span class="stat"><strong>{{ userProfile.followingCount }}</strong> Following</span>
             </div>
+        </div>
 
-            <div class="profile-actions" *ngIf="userProfile.username !== currentUser">
-                <button class="follow-btn"
-                    style="background: transparent; color: #ef4444; border: 1px solid #ef4444; margin-left: 0.5rem;"
-                    (click)="openReportModal()">
-                    Report User
-                </button>
-                <button class="follow-btn" [class.following]="userProfile.isFollowing" (click)="toggleFollow()">
+        <div class="profile-actions">
+            <button *ngIf="currentUser === userProfile.username" class="btn-edit" (click)="openEditModal()">
+                Edit Profile
+            </button>
+
+            <ng-container *ngIf="currentUser !== userProfile.username">
+                <button class="btn-follow" [ngClass]="{'following': userProfile.isFollowing}" (click)="toggleFollow()">
                     {{ userProfile.isFollowing ? 'Unfollow' : 'Follow' }}
                 </button>
+                <button class="btn-report" (click)="openReportModal()">
+                    ⚠️ Report
+                </button>
+            </ng-container>
+        </div>
+    </div>
+
+    <div class="admin-controls-wrapper" *ngIf="isAdmin() && currentUser !== userProfile.username">
+        <div class="card border-danger bg-dark admin-card">
+            <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="fs-4">🛡️</span>
+                    <div>
+                        <h6 class="text-danger fw-bold mb-0">Admin Override</h6>
+                        <small class="text-secondary">Global moderation tools</small>
+                    </div>
+                </div>
+
+                <div class="btn-group shadow-sm">
+                    <button class="btn fw-bold" [ngClass]="userProfile.isBanned ? 'btn-outline-light' : 'btn-warning'"
+                        (click)="toggleBanAsAdmin()">
+                        {{ userProfile.isBanned ? 'Unban User' : 'Ban User' }}
+                    </button>
+                    <button class="btn btn-danger fw-bold" (click)="deleteUserAsAdmin()">
+                        Vaporize Account
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="profile-feed">
+        <h3 class="feed-title">{{ userProfile.username }}'s Posts</h3>
+
+        <div *ngIf="!isLoadingMore && posts.length === 0" class="empty-state">
+            <p>No posts to show.</p>
+        </div>
+
+        <div class="posts-list" *ngIf="posts.length > 0">
+            <app-post-card *ngFor="let post of posts" [post]="post" [currentUser]="currentUser"
+                (postDeleted)="onPostDeleted($event)">
+            </app-post-card>
+        </div>
+
+        <div *ngIf="isLoadingMore" class="loading-state p-3 text-center text-secondary">
+            <div class="spinner-border spinner-border-sm text-danger me-2" role="status"></div>
+            Loading more posts...
+        </div>
+
+        <div *ngIf="!hasMorePosts && posts.length > 0"
+            class="text-center text-secondary p-4 mt-2 border-top border-dark">
+            <small>You've reached the end of the line.</small>
+        </div>
+    </div>
+</div>
+
+<app-report-modal *ngIf="showReportModal" [targetId]="userProfile?.id!" targetType="USER"
+    (closeModal)="closeReportModal()">
+</app-report-modal>
+
+<div class="modal-overlay" *ngIf="showEditModal" (click)="closeEditModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h3>Edit Profile</h3>
+        </div>
+
+        <div class="modal-body custom-form">
+            <div class="form-group avatar-upload-group">
+                <label class="avatar-preview-container" for="edit-avatar-input">
+                    <img *ngIf="avatarPreview" [src]="avatarPreview" alt="Preview" class="avatar-preview">
+                    <div *ngIf="!avatarPreview" class="avatar-placeholder">
+                        <span>+</span>
+                    </div>
+                </label>
+                <input type="file" id="edit-avatar-input" (change)="onAvatarSelected($event)" accept="image/*"
+                    style="display: none;">
+                <span class="optional-text">Click to change picture</span>
+            </div>
+
+            <div class="form-group mt-3">
+                <label class="fw-bold text-light mb-2 d-block">Bio</label>
+                <textarea [(ngModel)]="editBio" rows="4" class="form-control bg-dark text-light border-secondary"
+                    placeholder="Tell everyone a little about yourself...">
+                </textarea>
             </div>
         </div>
 
+        <div class="modal-footer">
+            <button class="btn-cancel" (click)="closeEditModal()" [disabled]="isSaving">Cancel</button>
+            <button class="btn-confirm" (click)="saveProfile()" [disabled]="isSaving">
+                {{ isSaving ? 'Saving...' : 'Save Changes' }}
+            </button>
+        </div>
     </div>
-
-    <div *ngIf="isLoading" class="empty-feed">Loading profile...</div>
-    <div *ngIf="!isLoading && posts.length === 0" class="empty-feed">No posts yet.</div>
-
-    <div *ngIf="!isLoading">
-        <app-post-card *ngFor="let p of posts" [post]="p" [currentUser]="currentUser"
-            (postDeleted)="onPostDeleted($event)">
-        </app-post-card>
-    </div>
-
 </div>
-
-<app-report-modal *ngIf="showReportModal" [targetType]="'USER'" [targetId]="userProfile!.id"
-    (closeModal)="closeReportModal()">
-</app-report-modal>

@@ -1,27 +1,35 @@
 package com.blog.api.controller;
 
 import java.io.IOException;
-
-import com.blog.api.model.Comment;
-import com.blog.api.model.Post;
-import com.blog.api.model.User;
-import com.blog.api.model.Notification;
-import com.blog.api.repository.CommentRepository;
-import com.blog.api.repository.NotificationRepository;
-import com.blog.api.repository.PostRepository;
-import com.blog.api.repository.UserRepository;
-import com.blog.api.service.FileStorageService;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.security.Principal;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.blog.api.model.Comment;
+import com.blog.api.model.NotificationType;
+import com.blog.api.model.Post;
+import com.blog.api.model.User;
+import com.blog.api.repository.CommentRepository;
+import com.blog.api.repository.PostRepository;
+import com.blog.api.repository.UserRepository;
+import com.blog.api.service.FileStorageService;
+import com.blog.api.service.NotificationService;
 
 @RestController
 @RequestMapping("/api/posts")
@@ -31,27 +39,33 @@ public class PostController {
     private final PostRepository postRepository;
     private final FileStorageService fileStorageService;
     private final CommentRepository commentRepository;
-    private final NotificationRepository notificationRepository;
+    private final NotificationService notificationService;
 
     public PostController(PostRepository postRepository, UserRepository userRepository,
             FileStorageService fileStorageService, CommentRepository commentRepository,
-            NotificationRepository notificationRepository) {
+            NotificationService notificationService) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
         this.fileStorageService = fileStorageService;
         this.commentRepository = commentRepository;
-        this.notificationRepository = notificationRepository;
+        this.notificationService = notificationService;
     }
 
     @GetMapping
-    public ResponseEntity<List<Post>> getPersonalizedFeed(Principal principal) {
+    public ResponseEntity<List<Post>> getPersonalizedFeed(
+            @RequestParam(required = false) Long lastId,
+            @RequestParam(defaultValue = "10") int size,
+            Principal principal) {
+
         User currentUser = userRepository.findByUsername(principal.getName())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         Set<User> authorsToWatch = new HashSet<>(currentUser.getFollowing());
         authorsToWatch.add(currentUser);
 
-        List<Post> feed = postRepository.findByAuthorInOrderByCreatedAtDesc(authorsToWatch);
+        PageRequest limit = PageRequest.of(0, size);
+
+        List<Post> feed = postRepository.getFeedPosts(authorsToWatch, lastId, limit);
 
         return ResponseEntity.ok(feed);
     }
@@ -63,9 +77,25 @@ public class PostController {
         return ResponseEntity.ok(post);
     }
 
+    @GetMapping("/{postId}/comments")
+    public ResponseEntity<List<Comment>> getPaginatedComments(
+            @PathVariable Long postId,
+            @RequestParam(required = false) Long lastId,
+            @RequestParam(defaultValue = "5") int size) {
+
+        PageRequest limit = PageRequest.of(0, size);
+        List<Comment> comments = commentRepository.getPostComments(postId, lastId, limit);
+        return ResponseEntity.ok(comments);
+    }
+
     @GetMapping("/user/{username}")
-    public ResponseEntity<List<Post>> getPostsByUser(@PathVariable String username) {
-        List<Post> userPosts = postRepository.findByAuthorUsernameOrderByCreatedAtDesc(username);
+    public ResponseEntity<List<Post>> getPostsByUser(
+            @PathVariable String username,
+            @RequestParam(required = false) Long lastId,
+            @RequestParam(defaultValue = "10") int size) {
+
+        PageRequest limit = PageRequest.of(0, size);
+        List<Post> userPosts = postRepository.getProfilePosts(username, lastId, limit);
         return ResponseEntity.ok(userPosts);
     }
 
@@ -78,6 +108,13 @@ public class PostController {
             post.getLikes().remove(user);
         } else {
             post.getLikes().add(user);
+
+            notificationService.sendNotification(
+                    post.getAuthor(),
+                    user,
+                    NotificationType.LIKE,
+                    post.getId(),
+                    " liked your post.");
         }
 
         return ResponseEntity.ok(postRepository.save(post));
@@ -100,6 +137,14 @@ public class PostController {
                 .build();
 
         Comment savedComment = commentRepository.save(comment);
+
+        notificationService.sendNotification(
+                post.getAuthor(),
+                author,
+                NotificationType.COMMENT,
+                post.getId(),
+                " commented on your post.");
+
         return ResponseEntity.ok(savedComment);
     }
 
@@ -203,13 +248,12 @@ public class PostController {
 
             if (author.getFollowers() != null && !author.getFollowers().isEmpty()) {
                 for (User follower : author.getFollowers()) {
-                    Notification notification = Notification.builder()
-                            .recipient(follower)
-                            .actor(author)
-                            .message("published a new post.")
-                            .postId(post.getId())
-                            .build();
-                    notificationRepository.save(notification);
+                    notificationService.sendNotification(
+                            follower,
+                            author,
+                            NotificationType.NEW_POST,
+                            post.getId(),
+                            " published a new post.");
                 }
             }
 

@@ -25,6 +25,10 @@ export class PostCardComponent {
   isEditing: boolean = false;
   editPostText: string = '';
 
+  comments: any[] = [];
+  isLoadingComments = false;
+  hasMoreComments = true;
+  commentsVisible = false;
   editingCommentId: number | null = null;
   editCommentText: string = '';
 
@@ -48,6 +52,32 @@ export class PostCardComponent {
         console.error('Error decoding token for admin check', e);
       }
     }
+  }
+
+  toggleComments() {
+    this.commentsVisible = !this.commentsVisible;
+    if (this.commentsVisible && this.comments.length === 0) {
+      this.loadMoreComments();
+    }
+  }
+
+  loadMoreComments() {
+    if (this.isLoadingComments || !this.hasMoreComments) return;
+    this.isLoadingComments = true;
+
+    let lastId = null;
+    if (this.comments.length > 0) {
+      lastId = this.comments[this.comments.length - 1].id;
+    }
+
+    this.postService.getComments(this.post.id, lastId, 5).subscribe({
+      next: (newComments) => {
+        this.comments = [...this.comments, ...newComments];
+        this.hasMoreComments = newComments.length === 5;
+        this.isLoadingComments = false;
+      },
+      error: () => this.isLoadingComments = false
+    });
   }
 
   isVideo(mediaUrl: string | null): boolean {
@@ -102,26 +132,60 @@ export class PostCardComponent {
     });
   }
 
+  checkIfLiked(): boolean {
+    if (!this.post || !this.post.likes || !this.currentUser) {
+      return false;
+    }
+
+    return this.post.likes.some((user: any) => user.username === this.currentUser);
+  }
+
   toggleLike() {
-    this.post.toggleLocalLike(this.currentUser);
+    const currentlyLiked = this.checkIfLiked();
+    if (currentlyLiked) {
+      this.post.likes = this.post.likes.filter((user: any) => user.username !== this.currentUser);
+    } else {
+      this.post.likes.push({ username: this.currentUser });
+    }
+
     this.postService.likePost(this.post.id).subscribe({
-      next: (updatedPost) => this.post.likes = updatedPost.likes,
+      next: (updatedPost) => {
+        this.post.likes = updatedPost.likes;
+      },
       error: (err) => {
         console.error('Failed to toggle like', err);
-        this.post.toggleLocalLike(this.currentUser);
+        if (currentlyLiked) {
+          this.post.likes.push({ username: this.currentUser });
+        } else {
+          this.post.likes = this.post.likes.filter((user: any) => user.username !== this.currentUser);
+        }
       }
     });
   }
 
   submitComment() {
     if (!this.newCommentText.trim()) return;
+
     this.postService.addComment(this.post.id, this.newCommentText).subscribe({
       next: (newComment) => {
-        this.post.addLocalComment(newComment);
+        if (!this.comments) this.comments = [];
+        this.comments.unshift(newComment);
+
         this.newCommentText = '';
       },
       error: (err) => console.error('Failed to post comment', err)
     });
+  }
+
+  deleteComment(commentId: number) {
+    if (confirm('Delete this comment?')) {
+      this.postService.deleteComment(this.post.id, commentId).subscribe({
+        next: () => {
+          this.comments = this.comments.filter(c => c.id !== commentId);
+        },
+        error: (err) => console.error('Failed to delete comment', err)
+      });
+    }
   }
 
   startEditComment(comment: Comment) {
@@ -147,16 +211,5 @@ export class PostCardComponent {
       },
       error: (err) => console.error('Failed to update comment', err)
     });
-  }
-
-  deleteComment(commentId: number) {
-    if (confirm('Delete this comment?')) {
-      this.postService.deleteComment(this.post.id, commentId).subscribe({
-        next: () => {
-          this.post.comments = this.post.comments.filter(c => c.id !== commentId);
-        },
-        error: (err) => console.error('Failed to delete comment', err)
-      });
-    }
   }
 }

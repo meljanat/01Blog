@@ -66,19 +66,19 @@ export class NavbarComponent implements OnInit {
   }
 
   loadNotifications() {
-    this.notificationService.getUnreadCount().subscribe({
-      next: (count) => this.unreadCount = count,
-      error: (err) => console.error('Error fetching unread count', err)
-    });
-
-    this.notificationService.getNotifications().subscribe({
-      next: (data) => this.notifications = data,
-      error: (err) => console.error('Error fetching notifications', err)
+    this.notificationService.getNotifications().subscribe((data) => {
+      this.notifications = data;
+      this.calculateUnread();
     });
   }
 
-  toggleDropdown(event: Event) {
-    event.stopPropagation();
+  calculateUnread() {
+    this.notificationService.unreadCount().subscribe((count) => {
+      this.unreadCount = count;
+    });
+  }
+
+  toggleDropdown() {
     this.isDropdownOpen = !this.isDropdownOpen;
   }
 
@@ -87,18 +87,25 @@ export class NavbarComponent implements OnInit {
     this.isDropdownOpen = false;
   }
 
-  handleNotificationClick(notification: any, event: Event) {
+  toggleNotification(event: Event, notification: any) {
     event.stopPropagation();
+    event.preventDefault();
 
+    this.notificationService.toggleReadStatus(notification.id).subscribe(() => {
+      notification.read = !notification.read;
+      this.calculateUnread();
+    });
+  }
+
+  readNotification(notification: any) {
     if (!notification.read) {
       this.notificationService.markAsRead(notification.id).subscribe(() => {
         notification.read = true;
-        this.unreadCount = Math.max(0, this.unreadCount - 1);
+        this.calculateUnread();
       });
     }
 
     this.isDropdownOpen = false;
-    this.router.navigate(['/post', notification.postId]);
   }
 
   isLoggedIn(): boolean {

@@ -1,29 +1,38 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PostService } from '../../core/services/post.service';
 import { Post } from '../../core/models/post.model';
 import { PostCardComponent } from '../../core/components/post-card/post-card.component';
+import { UserService } from '../../core/services/user.service';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-feed',
   standalone: true,
-  imports: [CommonModule, FormsModule, PostCardComponent],
+  imports: [CommonModule, FormsModule, PostCardComponent, RouterLink],
   templateUrl: './feed.html',
   styleUrls: ['./feed.scss']
 })
 export class FeedComponent implements OnInit {
   private postService = inject(PostService);
+  private userService = inject(UserService);
 
   posts: Post[] = [];
-  isLoading: boolean = true;
+  currentPage = 0;
+  isLoadingMore = false;
+  hasMorePosts = true;
   currentUser = this.getCurrentUsername();
 
   newPostText: string = '';
   selectedFile: File | null = null;
 
+  suggestedUsers: any[] = [];
+  isLoadingSuggestions = true;
+
   ngOnInit() {
     this.loadPosts();
+    this.loadSuggestedUsers();
   }
 
   onPostDeleted(deletedPostId: number) {
@@ -31,15 +40,50 @@ export class FeedComponent implements OnInit {
   }
 
   loadPosts() {
-    this.isLoading = true;
-    this.postService.getAllPosts().subscribe({
-      next: (data) => {
-        this.posts = data;
-        this.isLoading = false;
+    if (this.isLoadingMore || !this.hasMorePosts) return;
+    this.isLoadingMore = true;
+
+    let lastId = null;
+    if (this.posts.length > 0) {
+      lastId = this.posts[this.posts.length - 1].id;
+    }
+
+    this.postService.getFeed(lastId).subscribe({
+      next: (newPosts) => {
+        this.posts = [...this.posts, ...newPosts];
+        this.hasMorePosts = newPosts.length === 10;
+        this.isLoadingMore = false;
       },
       error: (err) => {
-        console.error('Failed to load posts', err);
-        this.isLoading = false;
+        console.error('Failed to load feed', err);
+        this.isLoadingMore = false;
+      }
+    });
+  }
+
+  loadSuggestedUsers() {
+    this.userService.getSuggestedUsers().subscribe({
+      next: (users) => {
+        this.suggestedUsers = users;
+        this.isLoadingSuggestions = false;
+      },
+      error: (err) => {
+        console.error('Failed to load suggestions', err);
+        this.isLoadingSuggestions = false;
+      }
+    });
+  }
+
+  followSuggestedUser(event: Event, user: any) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    this.userService.followUser(user.username).subscribe({
+      next: () => {
+        this.suggestedUsers = this.suggestedUsers.filter(u => u.username !== user.username);
+      },
+      error: (err) => {
+        console.error('Failed to follow suggested user', err);
       }
     });
   }
@@ -78,6 +122,16 @@ export class FeedComponent implements OnInit {
       return payload.sub;
     } catch (e) {
       return '';
+    }
+  }
+
+  @HostListener('window:scroll', [])
+  onWindowScroll() {
+    const pos = (document.documentElement.scrollTop || document.body.scrollTop) + document.documentElement.offsetHeight;
+    const max = document.documentElement.scrollHeight;
+
+    if (pos >= max - 200) {
+      this.loadPosts();
     }
   }
 }

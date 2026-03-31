@@ -1,33 +1,73 @@
-<div class="feed-container">
+<div class="feed-layout">
 
-    <div class="create-post-card">
-        <textarea [(ngModel)]="newPostText" placeholder="What's on your mind?" class="post-input" rows="3">
-      </textarea>
+    <div class="main-feed">
 
-        <div class="create-post-actions">
-            <input type="file" (change)="onFileSelected($event)" accept="image/*,video/mp4,video/webm"
-                class="file-input" #fileInput>
-            <button class="submit-btn" (click)="createPost()" [disabled]="!newPostText.trim()">
-                Post
-            </button>
+        <div class="create-post-card">
+            <textarea [(ngModel)]="newPostText" placeholder="What's on your mind?" class="post-input" rows="3">
+            </textarea>
+
+            <div *ngIf="selectedFile" class="file-preview-area">
+                <span class="file-name">📎 Attached: {{ selectedFile.name }}</span>
+            </div>
+
+            <div class="create-post-actions">
+                <label class="upload-label">
+                    <span>📷 Add Media</span>
+                    <input type="file" (change)="onFileSelected($event)" accept="image/*,video/mp4,video/webm"
+                        class="hidden-file-input" #fileInput>
+                </label>
+
+                <button class="submit-btn" (click)="createPost()" [disabled]="!newPostText.trim() && !selectedFile">
+                    Post
+                </button>
+            </div>
         </div>
 
-        <div *ngIf="selectedFile" class="file-preview">
-            Attached: {{ selectedFile.name }}
+        <div class="posts-list">
+            <app-post-card *ngFor="let post of posts" [currentUser]="currentUser" [post]="post"></app-post-card>
+        </div>
+
+        <div *ngIf="isLoadingMore" class="scroll-status">
+            <div class="red-spinner"></div> Loading more posts...
+        </div>
+
+        <div *ngIf="!hasMorePosts && posts.length > 0" class="scroll-status end-message">
+            You've caught up! No more posts to show.
+        </div>
+
+        <div *ngIf="posts.length === 0 && !isLoadingMore" class="empty-state">
+            <p>No posts yet. Be the first to share something!</p>
         </div>
     </div>
 
-    <div *ngIf="isLoading" class="empty-feed">
-        Loading your feed...
-    </div>
+    <aside class="feed-sidebar">
+        <div class="suggestions-card">
+            <h3 class="suggestions-title">Who to follow</h3>
 
-    <div *ngIf="!isLoading && posts.length === 0" class="empty-feed">
-        No posts yet. Be the first to share something!
-    </div>
+            <div *ngIf="isLoadingSuggestions" class="text-secondary small p-3">Loading suggestions...</div>
 
-    <div *ngIf="!isLoading">
-        <app-post-card *ngFor="let p of posts" [post]="p" [currentUser]="currentUser"
-            (postDeleted)="onPostDeleted($event)"> </app-post-card>
-    </div>
+            <div class="suggestion-list" *ngIf="!isLoadingSuggestions">
+                <a *ngFor="let user of suggestedUsers" [routerLink]="['/user', user.username]" class="suggestion-item">
 
+                    <div class="suggestion-avatar">
+                        <img *ngIf="user.profilePictureUrl"
+                            [src]="'http://localhost:8080/uploads/' + user.profilePictureUrl" alt="Avatar">
+                        <div *ngIf="!user.profilePictureUrl" class="avatar-placeholder">
+                            {{ user.username.charAt(0).toUpperCase() }}
+                        </div>
+                    </div>
+
+                    <div class="suggestion-info">
+                        <span class="suggestion-username">@{{ user.username }}</span>
+                        <span class="suggestion-bio">{{ (user.bio && user.bio.length > 25) ? (user.bio | slice:0:25) +
+                            '...' : user.bio }}</span>
+                    </div>
+
+                    <button class="btn-follow-small" (click)="followSuggestedUser($event, user)">
+                        Follow
+                    </button>
+                </a>
+            </div>
+        </div>
+    </aside>
 </div>

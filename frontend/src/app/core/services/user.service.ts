@@ -9,6 +9,7 @@ export interface UserProfile {
   profilePictureUrl?: string;
   followersCount: number;
   followingCount: number;
+  isBanned: boolean;
   isFollowing: boolean;
 }
 
@@ -27,5 +28,19 @@ export class UserService {
 
   unfollowUser(username: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/${username}/unfollow`, {}, { responseType: 'text' });
+  }
+
+  updateProfile(bio: string, file: File | null): Observable<any> {
+    const formData = new FormData();
+    formData.append('bio', bio);
+    if (file) {
+      formData.append('profilePicture', file);
+    }
+
+    return this.http.put(`${this.apiUrl}/profile`, formData);
+  }
+
+  getSuggestedUsers(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/suggested`);
   }
 }

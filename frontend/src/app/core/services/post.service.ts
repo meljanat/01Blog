@@ -8,10 +8,12 @@ export class PostService {
   private apiUrl = 'http://localhost:8080/api/posts';
   private http = inject(HttpClient);
 
-  getAllPosts(): Observable<Post[]> {
-    return this.http.get<any[]>(this.apiUrl).pipe(
-      map(data => data.map(item => new Post(item)))
-    );
+  getFeed(lastId: number | null, size: number = 10): Observable<any[]> {
+    let url = `${this.apiUrl}?size=${size}`;
+    if (lastId) {
+      url += `&lastId=${lastId}`;
+    }
+    return this.http.get<any[]>(url);
   }
 
   getPostById(postId: number): Observable<Post> {
@@ -20,10 +22,20 @@ export class PostService {
     );
   }
 
-  getPostsByUser(username: string): Observable<Post[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/user/${username}`).pipe(
-      map(data => data.map(item => new Post(item)))
-    );
+  getUserPosts(username: string, lastId: number | null, size: number = 10): Observable<any[]> {
+    let url = `${this.apiUrl}/user/${username}?size=${size}`;
+    if (lastId) {
+      url += `&lastId=${lastId}`;
+    }
+    return this.http.get<any[]>(url);
+  }
+
+  getComments(postId: number, lastId: number | null, size: number = 5): Observable<any[]> {
+    let url = `${this.apiUrl}/${postId}/comments?size=${size}`;
+    if (lastId) {
+      url += `&lastId=${lastId}`;
+    }
+    return this.http.get<any[]>(url);
   }
 
   createPost(formData: FormData): Observable<Post> {

@@ -24,19 +24,27 @@ public class NotificationController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Notification>> getUserNotifications(Principal principal) {
-        User user = userRepository.findByUsername(principal.getName())
+    public ResponseEntity<?> getUserNotifications(Principal principal) {
+        User currentUser = userRepository.findByUsername(principal.getName())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        return ResponseEntity.ok(notificationRepository.findByRecipientOrderByCreatedAtDesc(user));
+        List<Notification> notifications = notificationRepository.findByRecipientOrderByCreatedAtDesc(currentUser);
+        return ResponseEntity.ok(notifications);
     }
 
-    @GetMapping("/unread-count")
-    public ResponseEntity<Long> getUnreadCount(Principal principal) {
-        User user = userRepository.findByUsername(principal.getName())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    @PutMapping("/{id}/toggle")
+    public ResponseEntity<?> toggleReadStatus(@PathVariable Long id, Principal principal) {
+        Notification notification = notificationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Notification not found"));
 
-        return ResponseEntity.ok(notificationRepository.countByRecipientAndIsReadFalse(user));
+        if (!notification.getRecipient().getUsername().equals(principal.getName())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Not authorized to modify this notification.");
+        }
+
+        notification.setRead(!notification.isRead());
+        notificationRepository.save(notification);
+
+        return ResponseEntity.ok(notification);
     }
 
     @PutMapping("/{id}/read")
@@ -45,12 +53,21 @@ public class NotificationController {
                 .orElseThrow(() -> new RuntimeException("Notification not found"));
 
         if (!notification.getRecipient().getUsername().equals(principal.getName())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Not authorized.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Not authorized to modify this notification.");
         }
 
         notification.setRead(true);
         notificationRepository.save(notification);
 
-        return ResponseEntity.ok("Marked as read.");
+        return ResponseEntity.ok(notification);
+    }
+
+    @GetMapping("/unread-count")
+    public ResponseEntity<?> getUnreadCount(Principal principal) {
+        User currentUser = userRepository.findByUsername(principal.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        long unreadCount = notificationRepository.countByRecipientAndIsReadFalse(currentUser);
+        return ResponseEntity.ok(unreadCount);
     }
 }

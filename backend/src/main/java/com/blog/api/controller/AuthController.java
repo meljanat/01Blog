@@ -1,6 +1,10 @@
 package com.blog.api.controller;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
@@ -17,12 +21,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-
+import java.util.UUID;
 import com.blog.api.model.Role;
 import com.blog.api.model.User;
 import com.blog.api.repository.UserRepository;
 import com.blog.api.security.JwtUtils;
-import com.blog.api.service.FileStorageService;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -32,15 +35,13 @@ public class AuthController {
     private final UserRepository userRepository;
     private final PasswordEncoder encoder;
     private final JwtUtils jwtUtils;
-    private final FileStorageService fileStorageService;
 
     public AuthController(AuthenticationManager authenticationManager, UserRepository userRepository,
-            PasswordEncoder encoder, JwtUtils jwtUtils, FileStorageService fileStorageService) {
+            PasswordEncoder encoder, JwtUtils jwtUtils) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.encoder = encoder;
         this.jwtUtils = jwtUtils;
-        this.fileStorageService = fileStorageService;
     }
 
     @PostMapping("/register")
@@ -50,7 +51,6 @@ public class AuthController {
             @RequestParam("password") String password,
             @RequestParam(value = "bio", required = false) String bio,
             @RequestParam(value = "file", required = false) MultipartFile file) {
-        username = username.toLowerCase();
 
         try {
             if (userRepository.existsByUsername(username)) {
@@ -63,7 +63,17 @@ public class AuthController {
 
             String profilePicUrl = null;
             if (file != null && !file.isEmpty()) {
-                profilePicUrl = fileStorageService.saveFile(file);
+                String filename = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
+                Path uploadPath = Paths.get("uploads");
+
+                if (!Files.exists(uploadPath)) {
+                    Files.createDirectories(uploadPath);
+                }
+
+                Path filePath = uploadPath.resolve(filename);
+                Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+                profilePicUrl = filename;
             }
 
             User user = new User();
