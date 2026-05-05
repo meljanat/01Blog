@@ -19,15 +19,15 @@ export class UserService {
   private http = inject(HttpClient);
 
   getUserProfile(username: string): Observable<UserProfile> {
-    return this.http.get<UserProfile>(`${this.apiUrl}/${username}`);
+    return this.http.get<UserProfile>(`${this.apiUrl}/${encodeURIComponent(username)}`);
   }
 
   followUser(username: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/${username}/follow`, {}, { responseType: 'text' });
+    return this.http.post(`${this.apiUrl}/${encodeURIComponent(username)}/follow`, {}, { responseType: 'text' });
   }
 
   unfollowUser(username: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/${username}/unfollow`, {}, { responseType: 'text' });
+    return this.http.post(`${this.apiUrl}/${encodeURIComponent(username)}/unfollow`, {}, { responseType: 'text' });
   }
 
   updateProfile(bio: string, file: File | null): Observable<any> {

@@ -19,7 +19,6 @@ export class FeedComponent implements OnInit {
   private userService = inject(UserService);
 
   posts: Post[] = [];
-  currentPage = 0;
   isLoadingMore = false;
   hasMorePosts = true;
   currentUser = this.getCurrentUsername();

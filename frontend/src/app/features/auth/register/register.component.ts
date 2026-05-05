@@ -9,7 +9,7 @@ import { AuthService } from '../../../core/services/auth.service';
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './register.html',
-  styleUrls: ['./register.scss']
+  styleUrls: ['../login/login.scss', './register.scss']
 })
 export class RegisterComponent {
   private authService = inject(AuthService);
@@ -48,8 +48,7 @@ export class RegisterComponent {
     }
 
     this.authService.register(formData).subscribe({
-      next: (res) => {
-        console.log('Registration successful', res);
+      next: () => {
         this.router.navigate(['/login']);
       },
       error: (err) => console.error('Registration failed', err)

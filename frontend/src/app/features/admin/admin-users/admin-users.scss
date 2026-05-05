@@ -127,9 +127,9 @@
 }
 
 .status-badge.active {
-    background: rgba(16, 185, 129, 0.1);
-    color: #10b981;
-    border: 1px solid rgba(16, 185, 129, 0.2);
+    background: rgba(161, 161, 170, 0.1);
+    color: #d4d4d8;
+    border: 1px solid rgba(161, 161, 170, 0.2);
 }
 
 .status-badge.banned {
@@ -145,13 +145,14 @@
 }
 
 .audit-link {
-    color: #3b82f6;
+    color: #ef4444;
     text-decoration: none;
     font-size: 0.85rem;
     font-weight: bold;
 }
 
 .audit-link:hover {
+    color: #f87171;
     text-decoration: underline;
 }
 
@@ -180,4 +181,22 @@
 .ban-btn.is-banned:hover {
     background: #52525b;
     color: white;
+}
+
+@media (max-width: 620px) {
+    .dashboard-panel {
+        padding: 1rem;
+    }
+
+    .panel-header {
+        margin-bottom: 1.25rem;
+    }
+
+    .panel-header h2 {
+        font-size: 1.35rem;
+    }
+
+    .actions-cell {
+        gap: 0.5rem;
+    }
 }

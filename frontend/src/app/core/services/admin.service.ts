@@ -34,4 +34,8 @@ export class AdminService {
   deletePost(postId: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/posts/${postId}`, { responseType: 'text' });
   }
+
+  deleteComment(commentId: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/comments/${commentId}`, { responseType: 'text' });
+  }
 }

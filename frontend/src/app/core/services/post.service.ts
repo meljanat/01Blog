@@ -23,7 +23,7 @@ export class PostService {
   }
 
   getUserPosts(username: string, lastId: number | null, size: number = 10): Observable<any[]> {
-    let url = `${this.apiUrl}/user/${username}?size=${size}`;
+    let url = `${this.apiUrl}/user/${encodeURIComponent(username)}?size=${size}`;
     if (lastId) {
       url += `&lastId=${lastId}`;
     }

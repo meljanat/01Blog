@@ -1,2 +1,4 @@
-# After running "docker-compose up -d"
-docker exec -it blog-db psql -U user -d blogdb
+#!/usr/bin/env bash
+set -euo pipefail
+
+docker exec -it blog-db psql -U MOUAD -d blogdb

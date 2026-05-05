@@ -7,14 +7,13 @@ import { ConfirmModalComponent } from './core/components/confirm-modal/confirm-m
   selector: 'app-root',
   standalone: true,
   imports: [RouterOutlet, NavbarComponent, ConfirmModalComponent],
+  styleUrls: ['./app.scss'],
   template: `
     <app-navbar></app-navbar>
-    <main style="min-height: calc(100vh - 70px); background-color: #121212;">
+    <main class="app-shell">
       <router-outlet></router-outlet>
       <app-confirm-modal></app-confirm-modal>
     </main>
   `
 })
-export class App {
-  title = '01Blog';
-}
+export class App {}

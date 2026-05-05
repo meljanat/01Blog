@@ -41,7 +41,7 @@
                 <textarea [(ngModel)]="bio" name="bio" rows="3" placeholder="Tell us about yourself..."></textarea>
             </div>
 
-            <button type="submit" class="btn btn-danger w-100 fw-bold py-2 mt-3"
+            <button type="submit" class="submit-btn"
                 [disabled]="!userData.username || !userData.email || !userData.password">
                 Register
             </button>

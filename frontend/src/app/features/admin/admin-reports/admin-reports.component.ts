@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AdminService } from '../../../core/services/admin.service';
 import { Router } from '@angular/router';
+import { ConfirmationService } from '../../../core/services/confirmation.service';
 
 @Component({
   selector: 'app-admin-reports',
@@ -13,6 +14,7 @@ import { Router } from '@angular/router';
 export class AdminReportsComponent implements OnInit {
   private adminService = inject(AdminService);
   private router = inject(Router);
+  private confirmationService = inject(ConfirmationService);
 
   reports: any[] = [];
   isLoading: boolean = true;
@@ -35,19 +37,23 @@ export class AdminReportsComponent implements OnInit {
   }
 
   resolveReport(reportId: number) {
-    if (confirm('Mark this report as resolved?')) {
-      this.adminService.resolveReport(reportId).subscribe({
-        next: () => {
-          this.reports = this.reports.filter(r => r.id !== reportId);
-        },
-        error: (err) => console.error('Failed to resolve report', err)
-      });
-    }
+    this.confirmationService.requireConfirmation({
+      title: 'Resolve Report',
+      message: 'Mark this report as resolved?',
+      confirmText: 'Resolve',
+      isDanger: false,
+      action: () => {
+        this.adminService.resolveReport(reportId).subscribe({
+          next: () => {
+            this.reports = this.reports.filter(r => r.id !== reportId);
+          },
+          error: (err) => console.error('Failed to resolve report', err)
+        });
+      }
+    });
   }
 
   inspectReportTarget(report: any) {
-    console.log(report);
-    
     const type = report.targetType.toUpperCase();
 
     if (type === 'POST') {

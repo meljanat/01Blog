@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { Post, Comment } from '../../models/post.model';
 import { PostService } from '../../services/post.service';
+import { AdminService } from '../../services/admin.service';
+import { ConfirmationService } from '../../services/confirmation.service';
 import { ReportModalComponent } from '../report-modal/report-modal.component';
 
 @Component({
@@ -20,6 +22,8 @@ export class PostCardComponent {
   @Output() postDeleted = new EventEmitter<number>();
 
   private postService = inject(PostService);
+  private adminService = inject(AdminService);
+  private confirmationService = inject(ConfirmationService);
   newCommentText: string = '';
 
   isEditing: boolean = false;
@@ -97,14 +101,24 @@ export class PostCardComponent {
   }
 
   deletePost() {
-    if (confirm('Are you sure you want to delete this post? This cannot be undone.')) {
-      this.postService.deletePost(this.post.id).subscribe({
-        next: () => {
-          this.postDeleted.emit(this.post.id);
-        },
-        error: (err) => console.error('Failed to delete post', err)
-      });
-    }
+    this.confirmationService.requireConfirmation({
+      title: 'Delete Post',
+      message: 'Are you sure you want to delete this post? This action cannot be undone.',
+      confirmText: 'Delete Post',
+      isDanger: true,
+      action: () => {
+        const deleteRequest = this.isAdmin
+          ? this.adminService.deletePost(this.post.id)
+          : this.postService.deletePost(this.post.id);
+
+        deleteRequest.subscribe({
+          next: () => {
+            this.postDeleted.emit(this.post.id);
+          },
+          error: (err) => console.error('Failed to delete post', err)
+        });
+      }
+    });
   }
 
   startEditing() {
@@ -178,14 +192,24 @@ export class PostCardComponent {
   }
 
   deleteComment(commentId: number) {
-    if (confirm('Delete this comment?')) {
-      this.postService.deleteComment(this.post.id, commentId).subscribe({
-        next: () => {
-          this.comments = this.comments.filter(c => c.id !== commentId);
-        },
-        error: (err) => console.error('Failed to delete comment', err)
-      });
-    }
+    this.confirmationService.requireConfirmation({
+      title: 'Delete Comment',
+      message: 'Are you sure you want to delete this comment? This action cannot be undone.',
+      confirmText: 'Delete Comment',
+      isDanger: true,
+      action: () => {
+        const deleteRequest = this.isAdmin
+          ? this.adminService.deleteComment(commentId)
+          : this.postService.deleteComment(this.post.id, commentId);
+
+        deleteRequest.subscribe({
+          next: () => {
+            this.comments = this.comments.filter(c => c.id !== commentId);
+          },
+          error: (err) => console.error('Failed to delete comment', err)
+        });
+      }
+    });
   }
 
   startEditComment(comment: Comment) {

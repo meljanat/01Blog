@@ -22,7 +22,7 @@ public class FileStorageService {
             return null;
         }
 
-        Path uploadDir = Paths.get(uploadPath);
+        Path uploadDir = Paths.get(uploadPath).toAbsolutePath().normalize();
         if (!Files.exists(uploadDir)) {
             Files.createDirectories(uploadDir);
         }

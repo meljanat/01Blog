@@ -9,6 +9,7 @@ import { PostCardComponent } from '../../core/components/post-card/post-card.com
 import { AdminService } from '../../core/services/admin.service';
 import { ConfirmationService } from '../../core/services/confirmation.service';
 import { FormsModule } from '@angular/forms';
+import { distinctUntilChanged, map } from 'rxjs';
 
 @Component({
   selector: 'app-profile',
@@ -30,15 +31,14 @@ export class ProfileComponent implements OnInit {
   posts: Post[] = [];
   isLoadingMore = false;
   hasMorePosts = true;
-  profileUsername = '';
   currentUser = this.getCurrentUsername();
+  private activeProfileLoadId = 0;
 
   ngOnInit() {
-    this.route.paramMap.subscribe(params => {
-      this.username = params.get('username') || '';
-      this.loadUserProfile();
-      this.loadUserPosts();
-    });
+    this.route.paramMap.pipe(
+      map(params => params.get('username') || ''),
+      distinctUntilChanged()
+    ).subscribe(username => this.loadProfile(username));
   }
 
   showReportModal = false;
@@ -51,10 +51,32 @@ export class ProfileComponent implements OnInit {
   openReportModal() { this.showReportModal = true; }
   closeReportModal() { this.showReportModal = false; }
 
-  loadUserProfile() {
-    this.userService.getUserProfile(this.username).subscribe({
-      next: (profile) => this.userProfile = profile,
-      error: (err) => console.error('Failed to load profile', err)
+  private loadProfile(username: string) {
+    this.username = username;
+    this.activeProfileLoadId++;
+
+    this.userProfile = null;
+    this.posts = [];
+    this.hasMorePosts = true;
+    this.isLoadingMore = false;
+    this.closeReportModal();
+
+    if (!username) return;
+
+    this.loadUserProfile(this.activeProfileLoadId, username);
+    this.loadUserPosts(this.activeProfileLoadId, username);
+  }
+
+  loadUserProfile(loadId = this.activeProfileLoadId, username = this.username) {
+    this.userService.getUserProfile(username).subscribe({
+      next: (profile) => {
+        if (loadId !== this.activeProfileLoadId) return;
+        this.userProfile = profile;
+      },
+      error: (err) => {
+        if (loadId !== this.activeProfileLoadId) return;
+        console.error('Failed to load profile', err);
+      }
     });
   }
 
@@ -108,7 +130,7 @@ export class ProfileComponent implements OnInit {
     this.posts = this.posts.filter(p => p.id !== deletedPostId);
   }
 
-  loadUserPosts() {
+  loadUserPosts(loadId = this.activeProfileLoadId, username = this.username) {
     if (this.isLoadingMore || !this.hasMorePosts) return;
     this.isLoadingMore = true;
 
@@ -117,13 +139,18 @@ export class ProfileComponent implements OnInit {
       lastId = this.posts[this.posts.length - 1].id;
     }
 
-    this.postService.getUserPosts(this.username, lastId).subscribe({
+    this.postService.getUserPosts(username, lastId).subscribe({
       next: (newPosts) => {
+        if (loadId !== this.activeProfileLoadId) return;
         this.posts = [...this.posts, ...newPosts];
         this.hasMorePosts = newPosts.length === 10;
         this.isLoadingMore = false;
       },
-      error: () => this.isLoadingMore = false
+      error: (err) => {
+        if (loadId !== this.activeProfileLoadId) return;
+        console.error('Failed to load user posts', err);
+        this.isLoadingMore = false;
+      }
     });
   }
 
@@ -205,9 +232,9 @@ export class ProfileComponent implements OnInit {
     if (!this.userProfile) return;
 
     this.confirmationService.requireConfirmation({
-      title: 'Permanent Deletion',
-      message: `CRITICAL OVERRIDE: Are you sure you want to permanently vaporize @${this.userProfile.username}'s account? This action cannot be undone.`,
-      confirmText: 'Vaporize Account',
+      title: 'Delete Account',
+      message: `Are you sure you want to permanently delete @${this.userProfile.username}'s account? This action cannot be undone.`,
+      confirmText: 'Delete Account',
       isDanger: true,
       action: () => {
         this.adminService.deleteUser(this.userProfile!.id).subscribe({

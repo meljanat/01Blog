@@ -88,9 +88,9 @@
 }
 
 .media-badge.yes {
-    background: rgba(16, 185, 129, 0.1);
-    color: #10b981;
-    border: 1px solid rgba(16, 185, 129, 0.2);
+    background: rgba(220, 38, 38, 0.1);
+    color: #f87171;
+    border: 1px solid rgba(220, 38, 38, 0.25);
 }
 
 .media-badge.no {
@@ -123,7 +123,7 @@
 }
 
 .view-link {
-    color: #3b82f6;
+    color: #ef4444;
     text-decoration: none;
     font-weight: bold;
     font-size: 0.9rem;
@@ -131,6 +131,24 @@
 }
 
 .view-link:hover {
-    color: #60a5fa;
+    color: #f87171;
     text-decoration: underline;
+}
+
+@media (max-width: 620px) {
+    .dashboard-panel {
+        padding: 1rem;
+    }
+
+    .panel-header {
+        margin-bottom: 1.25rem;
+    }
+
+    .panel-header h2 {
+        font-size: 1.35rem;
+    }
+
+    .actions-cell {
+        gap: 0.5rem;
+    }
 }

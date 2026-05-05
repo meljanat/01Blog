@@ -1,9 +1,6 @@
 package com.blog.api.controller;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.security.Principal;
 import java.util.HashMap;
 import java.util.List;
@@ -19,10 +16,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.UUID;
-import java.nio.file.Path;
-
 import com.blog.api.model.NotificationType;
+import com.blog.api.service.FileStorageService;
 import com.blog.api.service.NotificationService;
 import com.blog.api.model.User;
 import com.blog.api.repository.UserRepository;
@@ -33,10 +28,13 @@ public class UserController {
 
     private final UserRepository userRepository;
     private final NotificationService notificationService;
+    private final FileStorageService fileStorageService;
 
-    public UserController(UserRepository userRepository, NotificationService notificationService) {
+    public UserController(UserRepository userRepository, NotificationService notificationService,
+            FileStorageService fileStorageService) {
         this.userRepository = userRepository;
         this.notificationService = notificationService;
+        this.fileStorageService = fileStorageService;
     }
 
     @GetMapping("/{username}")
@@ -78,17 +76,7 @@ public class UserController {
             user.setBio(bio);
 
             if (profilePicture != null && !profilePicture.isEmpty()) {
-                String filename = UUID.randomUUID().toString() + "_" + profilePicture.getOriginalFilename();
-                Path uploadPath = Paths.get("uploads");
-
-                if (!Files.exists(uploadPath)) {
-                    Files.createDirectories(uploadPath);
-                }
-
-                Path filePath = uploadPath.resolve(filename);
-                Files.copy(profilePicture.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-
-                user.setProfilePictureUrl(filename);
+                user.setProfilePictureUrl(fileStorageService.saveFile(profilePicture));
             }
 
             userRepository.save(user);

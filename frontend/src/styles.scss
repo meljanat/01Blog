@@ -10,30 +10,263 @@ html {
   height: 100%;
   @include mat.theme((
     color: (
-      primary: mat.$magenta-palette,
-      tertiary: mat.$violet-palette,
+      primary: mat.$red-palette,
+      tertiary: mat.$red-palette,
     ),
     typography: Roboto,
     density: 0,
   ));
 }
 
+:root {
+  --bg: #0f0f10;
+  --surface: #1a1a1d;
+  --surface-raised: #202024;
+  --surface-hover: #29292e;
+  --border: #343438;
+  --border-strong: #44444a;
+  --scarlet: #dc2626;
+  --scarlet-hover: #b91c1c;
+  --scarlet-dark: #7f1d1d;
+  --scarlet-soft: rgba(220, 38, 38, 0.12);
+  --text: #f3f4f6;
+  --muted: #a3a3a3;
+  --subtle: #737373;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 body {
-  // Default the application to a light color theme. This can be changed to
-  // `dark` to enable the dark color theme, or to `light dark` to defer to the
-  // user's system settings.
-  color-scheme: light;
-
-  // Set a default background, font and text colors for the application using
-  // Angular Material's system-level CSS variables. Learn more about these
-  // variables at https://material.angular.dev/guide/system-variables
-  // background-color: var(--mat-sys-surface);
-  background-color: #121212;
-  color: var(--mat-sys-on-surface);
+  color-scheme: dark;
+  background-color: var(--bg);
+  color: var(--text);
   font: var(--mat-sys-body-medium);
-
-  // Reset the user agent margin.
   margin: 0;
   height: 100%;
+  overflow-x: hidden;
 }
-/* You can add global styles to this file, and also import other style files */
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+img,
+video {
+  max-width: 100%;
+}
+
+.app-shell {
+  min-height: calc(100vh - 70px);
+  background-color: var(--bg);
+}
+
+body .post-card,
+body .create-post-card,
+body .profile-container,
+body .auth-card,
+body .dashboard-panel,
+body .suggestions-card,
+body .modal-card,
+body .modal-content,
+body .empty-state,
+body .loading-state {
+  border-radius: 8px;
+}
+
+body .btn-danger,
+body .btn-warning {
+  background-color: var(--scarlet) !important;
+  border-color: var(--scarlet) !important;
+  color: #fff !important;
+}
+
+body .btn-danger:hover,
+body .btn-warning:hover {
+  background-color: var(--scarlet-hover) !important;
+  border-color: var(--scarlet-hover) !important;
+}
+
+body .btn-outline-light {
+  background: transparent !important;
+  border-color: var(--border-strong) !important;
+  color: var(--text) !important;
+}
+
+body .btn-outline-light:hover {
+  background: var(--surface-hover) !important;
+}
+
+body .text-secondary {
+  color: var(--muted) !important;
+}
+
+body .border-dark,
+body .border-secondary {
+  border-color: var(--border) !important;
+}
+
+body .bg-dark {
+  background: var(--surface) !important;
+}
+
+@media (max-width: 860px) {
+  body .admin-container {
+    flex-direction: column;
+    min-height: auto;
+  }
+
+  body .admin-sidebar {
+    width: 100%;
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  body .sidebar-header {
+    padding: 1rem 1.25rem;
+  }
+
+  body .sidebar-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.75rem;
+  }
+
+  body .nav-item {
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+  }
+
+  body .nav-item.active {
+    border-right: 0;
+    box-shadow: inset 0 -2px 0 var(--scarlet);
+  }
+
+  body .admin-main {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 620px) {
+  .app-shell {
+    min-height: calc(100vh - 112px);
+  }
+
+  body .auth-container {
+    align-items: flex-start;
+    padding: 1rem;
+  }
+
+  body .auth-card,
+  body .dashboard-panel,
+  body .create-post-card,
+  body .profile-container,
+  body .post-card {
+    padding: 1rem;
+  }
+
+  body .feed-layout {
+    margin: 0.75rem auto;
+    padding: 0 0.75rem;
+    gap: 1rem;
+  }
+
+  body .create-post-actions,
+  body .modal-actions,
+  body .modal-footer,
+  body .profile-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  body .create-post-actions .upload-label,
+  body .create-post-actions .submit-btn,
+  body .profile-actions button,
+  body .modal-actions button,
+  body .modal-footer button {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+
+  body .profile-container {
+    margin: 0.75rem;
+  }
+
+  body .avatar-container {
+    width: 88px;
+    height: 88px;
+  }
+
+  body .profile-info h2,
+  body .panel-header h2,
+  body .auth-card h2 {
+    font-size: 1.35rem;
+    line-height: 1.25;
+  }
+
+  body .profile-stats {
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  body .btn-group {
+    display: grid;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  body .table-container {
+    margin: 0 -1rem;
+    padding: 0 1rem;
+  }
+
+  body .admin-table {
+    min-width: 680px;
+  }
+
+  body .post-card .post-header,
+  body .post-card .comment-header {
+    gap: 0.75rem;
+  }
+
+  body .post-card .header-info,
+  body .post-card .header-text,
+  body .post-card .comment-header-info {
+    min-width: 0;
+  }
+
+  body .post-card .author,
+  body .post-card .comment-author {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  body .post-card .post-actions {
+    gap: 0.35rem;
+    flex-wrap: wrap;
+  }
+
+  body .post-card .post-actions .action-btn {
+    padding: 0.45rem 0.55rem;
+    font-size: 0.85rem;
+  }
+
+  body .post-card .comment-input-area {
+    flex-direction: column;
+  }
+
+  body .post-card .comment-submit-btn {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.55rem;
+  }
+}

@@ -75,19 +75,36 @@ button {
 }
 
 .btn-confirm {
-    background: #3b82f6;
+    background: #27272a;
     color: white;
+    border: 1px solid #3f3f46;
 
     &:hover {
-        background: #2563eb;
+        background: #3f3f46;
     }
 
     &.danger {
         background: #dc2626;
+        border-color: #dc2626;
 
         &:hover {
             background: #b91c1c;
+            border-color: #b91c1c;
         }
+    }
+}
+
+@media (max-width: 520px) {
+    .modal-card {
+        width: calc(100% - 1.5rem);
+    }
+
+    .modal-footer {
+        flex-direction: column;
+    }
+
+    button {
+        width: 100%;
     }
 }
 

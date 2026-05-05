@@ -70,7 +70,7 @@
     transition: background 0.2s;
 
     &:hover {
-        background: rgba(59, 130, 246, 0.1);
+        background: rgba(220, 38, 38, 0.1);
     }
 }
 
@@ -85,7 +85,7 @@
     transition: all 0.2s;
 
     &:hover:not(:disabled) {
-        background: #2563eb;
+        background: #b91c1c;
     }
 
     &:disabled {
@@ -211,9 +211,9 @@
 }
 
 .btn-follow-small {
-    background: #f3f4f6;
-    color: #18181b;
-    border: none;
+    background: transparent;
+    color: #ef4444;
+    border: 1px solid #3f1515;
     border-radius: 20px;
     padding: 0.4rem 0.8rem;
     font-size: 0.8rem;
@@ -222,7 +222,8 @@
     transition: background 0.2s;
 
     &:hover {
-        background: #d1d5db;
+        background: rgba(220, 38, 38, 0.12);
+        border-color: #dc2626;
     }
 }
 
@@ -273,5 +274,19 @@
         position: static;
         order: -1;
         margin-bottom: 1rem;
+    }
+}
+
+@media (max-width: 520px) {
+    .post-input {
+        font-size: 1rem;
+    }
+
+    .suggestion-item {
+        padding: 0.85rem;
+    }
+
+    .btn-follow-small {
+        padding: 0.4rem 0.65rem;
     }
 }

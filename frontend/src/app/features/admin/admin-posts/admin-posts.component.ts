@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AdminService } from '../../../core/services/admin.service';
 import { RouterModule } from '@angular/router';
+import { ConfirmationService } from '../../../core/services/confirmation.service';
 
 @Component({
   selector: 'app-admin-posts',
@@ -12,6 +13,7 @@ import { RouterModule } from '@angular/router';
 })
 export class AdminPostsComponent implements OnInit {
   private adminService = inject(AdminService);
+  private confirmationService = inject(ConfirmationService);
 
   posts: any[] = [];
   isLoading: boolean = true;
@@ -34,13 +36,19 @@ export class AdminPostsComponent implements OnInit {
   }
 
   deletePostAsAdmin(postId: number) {
-    if (confirm('ADMIN OVERRIDE: Are you sure you want to permanently delete this post? This cannot be undone.')) {
-      this.adminService.deletePost(postId).subscribe({
-        next: () => {
-          this.posts = this.posts.filter(p => p.id !== postId);
-        },
-        error: (err) => console.error('Failed to delete post as admin', err)
-      });
-    }
+    this.confirmationService.requireConfirmation({
+      title: 'Delete Post',
+      message: 'Are you sure you want to permanently delete this post? This action cannot be undone.',
+      confirmText: 'Delete Post',
+      isDanger: true,
+      action: () => {
+        this.adminService.deletePost(postId).subscribe({
+          next: () => {
+            this.posts = this.posts.filter(p => p.id !== postId);
+          },
+          error: (err) => console.error('Failed to delete post as admin', err)
+        });
+      }
+    });
   }
 }
