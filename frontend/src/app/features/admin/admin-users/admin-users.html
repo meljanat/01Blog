@@ -54,6 +54,10 @@
                             (click)="toggleBan(user)">
                             {{ checkIsBanned(user) ? 'Unban' : 'Ban User' }}
                         </button>
+
+                        <button *ngIf="!isAdmin(user)" class="delete-btn" (click)="deleteUser(user)">
+                            Delete
+                        </button>
                     </td>
                 </tr>
             </tbody>

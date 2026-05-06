@@ -40,12 +40,17 @@
                             No new notifications.
                         </div>
 
-                        <a *ngFor="let notif of notifications" 
+                        <a *ngFor="let notif of notifications"
                             [routerLink]="notif.type === 'FOLLOW' ? ['/user', notif.actor.username] : ['/post', notif.targetId]"
                             class="notification-item" [ngClass]="{'unread': !notif.read}"
                             (click)="readNotification(notif)">
                             <div class="notif-content">
-                                <strong>{{ notif.actor.username }}</strong> {{ notif.message }}
+                                <div>
+                                    <strong>{{ notif.actor.username }}</strong> {{ notif.message }}
+                                </div>
+                                <span class="notification-time" [title]="notif.createdAt | timeDisplay:'full'">
+                                    {{ notif.createdAt | timeDisplay }}
+                                </span>
                             </div>
 
                             <button class="toggle-read-btn" [title]="notif.read ? 'Mark as unread' : 'Mark as read'"

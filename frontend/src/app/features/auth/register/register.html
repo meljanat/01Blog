@@ -9,6 +9,10 @@
                 {{ successMessage }}
             </div>
 
+            <div class="error-banner" *ngIf="errorMessage">
+                {{ errorMessage }}
+            </div>
+
             <div class="input-group avatar-upload-group">
                 <label class="avatar-preview-container" for="avatar-input">
                     <img *ngIf="previewUrl" [src]="previewUrl" alt="Preview" class="avatar-preview">

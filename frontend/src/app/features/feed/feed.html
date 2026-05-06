@@ -7,24 +7,34 @@
             </textarea>
 
             <div *ngIf="selectedFile" class="file-preview-area">
-                <span class="file-name">📎 Attached: {{ selectedFile.name }}</span>
+                <div class="media-preview-frame" *ngIf="selectedFilePreview">
+                    <video *ngIf="isSelectedFileVideo()" [src]="selectedFilePreview" controls muted></video>
+                    <img *ngIf="!isSelectedFileVideo()" [src]="selectedFilePreview" alt="Selected media preview">
+                </div>
+                <div class="file-preview-meta">
+                    <span class="file-name">Attached: {{ selectedFile.name }}</span>
+                    <button type="button" class="remove-file-btn" (click)="clearSelectedFile(); fileInput.value = ''">
+                        Remove
+                    </button>
+                </div>
             </div>
 
             <div class="create-post-actions">
                 <label class="upload-label">
-                    <span>📷 Add Media</span>
+                    <span>Add Media</span>
                     <input type="file" (change)="onFileSelected($event)" accept="image/*,video/mp4,video/webm"
                         class="hidden-file-input" #fileInput>
                 </label>
 
-                <button class="submit-btn" (click)="createPost()" [disabled]="!newPostText.trim() && !selectedFile">
+                <button class="submit-btn" (click)="createPost()" [disabled]="!newPostText.trim()">
                     Post
                 </button>
             </div>
         </div>
 
         <div class="posts-list">
-            <app-post-card *ngFor="let post of posts" [currentUser]="currentUser" [post]="post"></app-post-card>
+            <app-post-card *ngFor="let post of posts" [currentUser]="currentUser" [post]="post"
+                (postDeleted)="onPostDeleted($event)"></app-post-card>
         </div>
 
         <div *ngIf="isLoadingMore" class="scroll-status">

@@ -10,6 +10,10 @@
 /tmp/
 /out-tsc/
 /bazel-out/
+/backend/target/
+/backend/uploads/
+/frontend/dist/
+/frontend/node_modules/
 
 # THIS IS THE MOST IMPORTANT ONE FOR WSL/WINDOWS
 # It prevents the corrupted cache from being pushed to GitHub

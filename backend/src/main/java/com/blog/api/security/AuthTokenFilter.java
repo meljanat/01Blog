@@ -25,6 +25,11 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     private UserDetailsServiceImpl userDetailsService;
 
     @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        return request.getServletPath().startsWith("/uploads/");
+    }
+
+    @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         try {
@@ -35,6 +40,14 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                     String username = jwtUtils.getUserNameFromJwtToken(jwt);
 
                     UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                    if (!userDetails.isEnabled()) {
+                        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                        response.setContentType("application/json");
+                        response.getWriter()
+                                .write("{\"errorCode\": \"ACCOUNT_BANNED\", \"message\": \"Your account has been banned.\"}");
+                        return;
+                    }
+
                     UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                             userDetails, null, userDetails.getAuthorities());
                     authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

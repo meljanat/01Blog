@@ -26,7 +26,9 @@ export class LoginComponent {
         this.router.navigate(['/feed']);
       },
       error: (err) => {
-        this.errorMessage = 'Invalid username or password. Please try again.';
+        this.errorMessage = err.status === 403 && err.error
+          ? err.error
+          : 'Invalid username or password. Please try again.';
       }
     });
   }

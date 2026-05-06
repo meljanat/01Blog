@@ -34,6 +34,9 @@ export class RegisterComponent {
   }
 
   onSubmit() {
+    this.errorMessage = '';
+    this.successMessage = '';
+
     const formData = new FormData();
     formData.append('username', this.userData.username);
     formData.append('email', this.userData.email);
@@ -51,7 +54,9 @@ export class RegisterComponent {
       next: () => {
         this.router.navigate(['/login']);
       },
-      error: (err) => console.error('Registration failed', err)
+      error: (err) => {
+        this.errorMessage = err.error || 'Registration failed. Please check your details and try again.';
+      }
     });
   }
 }

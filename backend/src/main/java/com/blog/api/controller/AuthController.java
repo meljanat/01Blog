@@ -6,6 +6,7 @@ import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -52,6 +53,13 @@ public class AuthController {
             @RequestParam(value = "file", required = false) MultipartFile file) {
 
         try {
+            username = username.trim();
+            email = email.trim().toLowerCase();
+
+            if (username.isBlank() || email.isBlank() || password.isBlank()) {
+                return ResponseEntity.badRequest().body("Username, email, and password are required.");
+            }
+
             if (userRepository.existsByUsername(username)) {
                 return ResponseEntity.badRequest().body("Error: Username is already taken!");
             }
@@ -60,7 +68,7 @@ public class AuthController {
                 return ResponseEntity.badRequest().body("Error: Email is already in use!");
             }
 
-            String profilePicUrl = fileStorageService.saveFile(file);
+            String profilePicUrl = fileStorageService.saveImageFile(file);
 
             User user = new User();
             user.setUsername(username);
@@ -105,6 +113,9 @@ public class AuthController {
 
             return ResponseEntity.ok(jwt);
 
+        } catch (DisabledException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("Your account has been banned by an administrator.");
         } catch (AuthenticationException e) {
             return ResponseEntity.badRequest().body("Error: Invalid username or password");
         }

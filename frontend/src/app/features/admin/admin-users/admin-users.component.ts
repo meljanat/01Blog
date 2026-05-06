@@ -53,6 +53,24 @@ export class AdminUsersComponent implements OnInit {
     });
   }
 
+  deleteUser(user: any) {
+    this.confirmService.requireConfirmation({
+      title: 'Delete User',
+      message: `Permanently delete @${user.username} and all related content? This action cannot be undone.`,
+      confirmText: 'Delete User',
+      isDanger: true,
+      action: () => {
+        this.adminService.deleteUser(user.id).subscribe({
+          next: () => {
+            this.users = this.users.filter(existingUser => existingUser.id !== user.id);
+          },
+          error: (err) => console.error('Failed to delete user', err)
+        });
+      }
+    });
+  }
+
+
   checkIsBanned(user: any): boolean {
     return user.isBanned !== undefined ? user.isBanned : false;
   }

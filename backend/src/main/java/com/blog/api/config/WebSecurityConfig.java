@@ -56,6 +56,7 @@ public class WebSecurityConfig {
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/uploads/**").permitAll()
+                        .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated());
 
         http.authenticationProvider(authenticationProvider());

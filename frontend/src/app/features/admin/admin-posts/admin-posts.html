@@ -25,7 +25,9 @@
             <tbody>
                 <tr *ngFor="let post of posts">
                     <td class="id-cell">#{{ post.id }}</td>
-                    <td class="date-cell">{{ post.createdAt | date:'short' }}</td>
+                    <td class="date-cell" [title]="post.createdAt | timeDisplay:'full'">
+                        {{ post.createdAt | timeDisplay:'dateTime' }}
+                    </td>
 
                     <td>
                         <span class="author-name">@{{ post.author.username }}</span>

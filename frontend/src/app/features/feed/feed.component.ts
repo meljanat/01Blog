@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, HostListener } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PostService } from '../../core/services/post.service';
@@ -14,7 +14,7 @@ import { RouterLink } from '@angular/router';
   templateUrl: './feed.html',
   styleUrls: ['./feed.scss']
 })
-export class FeedComponent implements OnInit {
+export class FeedComponent implements OnInit, OnDestroy {
   private postService = inject(PostService);
   private userService = inject(UserService);
 
@@ -25,6 +25,8 @@ export class FeedComponent implements OnInit {
 
   newPostText: string = '';
   selectedFile: File | null = null;
+  selectedFilePreview: string | null = null;
+  selectedFileType: string = '';
 
   suggestedUsers: any[] = [];
   isLoadingSuggestions = true;
@@ -32,6 +34,10 @@ export class FeedComponent implements OnInit {
   ngOnInit() {
     this.loadPosts();
     this.loadSuggestedUsers();
+  }
+
+  ngOnDestroy() {
+    this.clearSelectedFile();
   }
 
   onPostDeleted(deletedPostId: number) {
@@ -90,8 +96,24 @@ export class FeedComponent implements OnInit {
   onFileSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
+      this.clearSelectedFile();
       this.selectedFile = file;
+      this.selectedFileType = file.type;
+      this.selectedFilePreview = URL.createObjectURL(file);
     }
+  }
+
+  clearSelectedFile() {
+    if (this.selectedFilePreview) {
+      URL.revokeObjectURL(this.selectedFilePreview);
+    }
+    this.selectedFile = null;
+    this.selectedFilePreview = null;
+    this.selectedFileType = '';
+  }
+
+  isSelectedFileVideo(): boolean {
+    return this.selectedFileType.startsWith('video/');
   }
 
   createPost() {
@@ -107,7 +129,7 @@ export class FeedComponent implements OnInit {
       next: (newPost) => {
         this.posts.unshift(newPost);
         this.newPostText = '';
-        this.selectedFile = null;
+        this.clearSelectedFile();
       },
       error: (err) => console.error('Failed to create post', err)
     });

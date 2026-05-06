@@ -16,12 +16,14 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
-      if (error.status === 401) {
-        if (error.error && error.error.errorCode === 'INVALID_JWT') {
-          console.warn('Session expired or token invalid. Logging out.');
-          localStorage.removeItem('token');
-          router.navigate(['/login']);
-        }
+      if (error.status === 401 && error.error?.errorCode === 'INVALID_JWT') {
+        localStorage.removeItem('token');
+        router.navigate(['/login']);
+      }
+
+      if (error.status === 403 && error.error?.errorCode === 'ACCOUNT_BANNED') {
+        localStorage.removeItem('token');
+        router.navigate(['/login']);
       }
 
       return throwError(() => error);

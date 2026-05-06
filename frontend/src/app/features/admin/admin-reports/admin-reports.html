@@ -30,7 +30,9 @@
             <tbody>
                 <tr *ngFor="let report of reports">
                     <td class="id-cell">#{{ report.id }}</td>
-                    <td class="date-cell">{{ report.createdAt | date:'short' }}</td>
+                    <td class="date-cell" [title]="report.createdAt | timeDisplay:'full'">
+                        {{ report.createdAt | timeDisplay:'dateTime' }}
+                    </td>
                     <td><span class="reporter-name">@{{ report.reporter.username }}</span></td>
                     <td>
                         <button class="target-btn badge" [ngClass]="report.targetType.toLowerCase()"

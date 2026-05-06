@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -76,7 +77,9 @@ public class UserController {
             user.setBio(bio);
 
             if (profilePicture != null && !profilePicture.isEmpty()) {
-                user.setProfilePictureUrl(fileStorageService.saveFile(profilePicture));
+                String previousProfilePicture = user.getProfilePictureUrl();
+                user.setProfilePictureUrl(fileStorageService.saveImageFile(profilePicture));
+                fileStorageService.deleteFile(previousProfilePicture);
             }
 
             userRepository.save(user);
@@ -97,7 +100,7 @@ public class UserController {
     public ResponseEntity<List<Map<String, Object>>> getSuggestedUsers(Principal principal) {
         String currentUsername = principal.getName();
 
-        List<User> suggestedUsers = userRepository.findRandomSuggestedUsers(currentUsername);
+        List<User> suggestedUsers = userRepository.findRandomSuggestedUsers(currentUsername, PageRequest.of(0, 5));
 
         List<Map<String, Object>> response = suggestedUsers.stream().map(user -> {
             Map<String, Object> map = new HashMap<>();
@@ -123,6 +126,14 @@ public class UserController {
             return ResponseEntity.badRequest().body("You cannot follow yourself.");
         }
 
+        if (Boolean.TRUE.equals(targetUser.getIsBanned())) {
+            return ResponseEntity.badRequest().body("You cannot follow a banned profile.");
+        }
+
+        if (currentUser.getFollowing().contains(targetUser)) {
+            return ResponseEntity.ok("Already following " + username);
+        }
+
         currentUser.follow(targetUser);
         userRepository.save(currentUser);
 
@@ -146,6 +157,12 @@ public class UserController {
 
         currentUser.unfollow(targetUser);
         userRepository.save(currentUser);
+
+        notificationService.deleteNotification(
+                targetUser,
+                currentUser,
+                NotificationType.FOLLOW,
+                currentUser.getId());
 
         return ResponseEntity.ok("Successfully unfollowed " + username);
     }

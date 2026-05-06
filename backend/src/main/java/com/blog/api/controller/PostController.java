@@ -29,6 +29,7 @@ import com.blog.api.repository.CommentRepository;
 import com.blog.api.repository.PostRepository;
 import com.blog.api.repository.UserRepository;
 import com.blog.api.service.FileStorageService;
+import com.blog.api.service.ModerationService;
 import com.blog.api.service.NotificationService;
 
 @RestController
@@ -40,15 +41,17 @@ public class PostController {
     private final FileStorageService fileStorageService;
     private final CommentRepository commentRepository;
     private final NotificationService notificationService;
+    private final ModerationService moderationService;
 
     public PostController(PostRepository postRepository, UserRepository userRepository,
             FileStorageService fileStorageService, CommentRepository commentRepository,
-            NotificationService notificationService) {
+            NotificationService notificationService, ModerationService moderationService) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
         this.fileStorageService = fileStorageService;
         this.commentRepository = commentRepository;
         this.notificationService = notificationService;
+        this.moderationService = moderationService;
     }
 
     @GetMapping
@@ -63,7 +66,7 @@ public class PostController {
         Set<User> authorsToWatch = new HashSet<>(currentUser.getFollowing());
         authorsToWatch.add(currentUser);
 
-        PageRequest limit = PageRequest.of(0, size);
+        PageRequest limit = PageRequest.of(0, clampPageSize(size));
 
         List<Post> feed = postRepository.getFeedPosts(authorsToWatch, lastId, limit);
 
@@ -83,7 +86,7 @@ public class PostController {
             @RequestParam(required = false) Long lastId,
             @RequestParam(defaultValue = "5") int size) {
 
-        PageRequest limit = PageRequest.of(0, size);
+        PageRequest limit = PageRequest.of(0, clampPageSize(size));
         List<Comment> comments = commentRepository.getPostComments(postId, lastId, limit);
         return ResponseEntity.ok(comments);
     }
@@ -94,7 +97,7 @@ public class PostController {
             @RequestParam(required = false) Long lastId,
             @RequestParam(defaultValue = "10") int size) {
 
-        PageRequest limit = PageRequest.of(0, size);
+        PageRequest limit = PageRequest.of(0, clampPageSize(size));
         List<Post> userPosts = postRepository.getProfilePosts(username, lastId, limit);
         return ResponseEntity.ok(userPosts);
     }
@@ -106,6 +109,11 @@ public class PostController {
 
         if (post.getLikes().contains(user)) {
             post.getLikes().remove(user);
+            notificationService.deleteNotification(
+                    post.getAuthor(),
+                    user,
+                    NotificationType.LIKE,
+                    post.getId());
         } else {
             post.getLikes().add(user);
 
@@ -126,12 +134,16 @@ public class PostController {
             @RequestBody String text,
             Principal principal) {
 
+        if (text == null || text.trim().isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+
         Post post = postRepository.findById(postId).orElseThrow(() -> new RuntimeException("Post not found"));
         User author = userRepository.findByUsername(principal.getName())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         Comment comment = Comment.builder()
-                .text(text)
+                .text(text.trim())
                 .author(author)
                 .post(post)
                 .build();
@@ -153,11 +165,15 @@ public class PostController {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
 
+        if (newText == null || newText.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body("Post text cannot be empty.");
+        }
+
         if (!post.getAuthor().getUsername().equals(principal.getName())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You can only edit your own posts.");
         }
 
-        post.setText(newText);
+        post.setText(newText.trim());
         postRepository.save(post);
 
         return ResponseEntity.ok(post);
@@ -172,13 +188,17 @@ public class PostController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You can only delete your own posts.");
         }
 
-        postRepository.delete(post);
+        moderationService.deletePost(post);
         return ResponseEntity.ok().body("Post deleted successfully");
     }
 
     @PutMapping("/{postId}/comments/{commentId}")
     public ResponseEntity<?> editComment(@PathVariable Long postId, @PathVariable Long commentId,
             @RequestBody String newText, Principal principal) {
+        if (newText == null || newText.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body("Comment text cannot be empty.");
+        }
+
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
 
@@ -191,7 +211,7 @@ public class PostController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You can only edit your own comments.");
         }
 
-        comment.setText(newText);
+        comment.setText(newText.trim());
         postRepository.save(post);
 
         return ResponseEntity.ok(comment);
@@ -213,8 +233,7 @@ public class PostController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Not authorized to delete this comment.");
         }
 
-        post.getComments().remove(comment);
-        postRepository.save(post);
+        moderationService.deleteComment(comment);
 
         return ResponseEntity.ok("Comment deleted successfully.");
     }
@@ -226,6 +245,10 @@ public class PostController {
             Authentication authentication) {
 
         try {
+            if (text == null || text.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("Post text cannot be empty.");
+            }
+
             String username = authentication.getName();
             User author = userRepository.findByUsername(username)
                     .orElseThrow(() -> new RuntimeException("User not found"));
@@ -233,12 +256,12 @@ public class PostController {
             String mediaUrl = null;
             String mediaType = null;
             if (file != null && !file.isEmpty()) {
-                mediaUrl = fileStorageService.saveFile(file);
+                mediaUrl = fileStorageService.savePostMedia(file);
                 mediaType = file.getContentType();
             }
 
             Post post = Post.builder()
-                    .text(text)
+                    .text(text.trim())
                     .mediaUrl(mediaUrl)
                     .mediaType(mediaType)
                     .author(author)
@@ -261,5 +284,9 @@ public class PostController {
         } catch (IOException e) {
             return ResponseEntity.badRequest().body("Error creating post: " + e.getMessage());
         }
+    }
+
+    private int clampPageSize(int size) {
+        return Math.min(Math.max(size, 1), 50);
     }
 }

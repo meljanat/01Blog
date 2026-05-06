@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { AdminService } from '../../../core/services/admin.service';
 import { Router } from '@angular/router';
 import { ConfirmationService } from '../../../core/services/confirmation.service';
+import { TimeDisplayPipe } from '../../../core/pipes/time-display.pipe';
 
 @Component({
   selector: 'app-admin-reports',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TimeDisplayPipe],
   templateUrl: './admin-reports.html',
   styleUrls: ['./admin-reports.scss']
 })

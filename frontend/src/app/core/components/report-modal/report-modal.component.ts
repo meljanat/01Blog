@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ReportService } from '../../services/report.service';
+import { ConfirmationService } from '../../services/confirmation.service';
 
 @Component({
   selector: 'app-report-modal',
@@ -16,6 +17,7 @@ export class ReportModalComponent {
   @Output() closeModal = new EventEmitter<void>();
 
   private reportService = inject(ReportService);
+  private confirmationService = inject(ConfirmationService);
 
   reason: string = '';
   isSubmitting: boolean = false;
@@ -25,6 +27,16 @@ export class ReportModalComponent {
   submit() {
     if (!this.reason.trim()) return;
 
+    this.confirmationService.requireConfirmation({
+      title: `Submit ${this.targetType.toLowerCase()} report`,
+      message: 'Send this report to the admin moderation queue?',
+      confirmText: 'Submit Report',
+      isDanger: true,
+      action: () => this.sendReport()
+    });
+  }
+
+  private sendReport() {
     this.isSubmitting = true;
     this.errorMessage = '';
 

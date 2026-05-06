@@ -2,12 +2,13 @@ import { Component, inject, HostListener, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { NotificationService } from '../../services/notification.service';
+import { TimeDisplayPipe } from '../../pipes/time-display.pipe';
 import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, TimeDisplayPipe],
   templateUrl: './navbar.html',
   styleUrls: ['./navbar.scss']
 })

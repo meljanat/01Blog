@@ -3,9 +3,9 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/blogdb
-    username: MOUAD
-    password: mmm
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/blogdb}
+    username: ${DATABASE_USERNAME:MOUAD}
+    password: ${DATABASE_PASSWORD:mmm}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -24,7 +24,7 @@ spring:
 # Custom JWT and File Storage Properties
 blog:
   app:
-    jwtSecret: "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970"
-    jwtExpirationMs: 86400000 # 24 hours
+    jwtSecret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+    jwtExpirationMs: ${JWT_EXPIRATION_MS:86400000} # 24 hours
   upload:
-    path: "./uploads"
+    path: ${UPLOAD_PATH:./uploads}

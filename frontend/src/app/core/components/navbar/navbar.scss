@@ -282,11 +282,19 @@
     flex: 1;
     font-size: 0.9rem;
     line-height: 1.4;
+    min-width: 0;
 
     strong {
         color: #f3f4f6;
         font-weight: 600;
     }
+}
+
+.notification-time {
+    display: block;
+    color: #71717a;
+    font-size: 0.76rem;
+    margin-top: 0.25rem;
 }
 
 /* =========================================

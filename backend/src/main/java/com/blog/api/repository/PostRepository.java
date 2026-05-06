@@ -22,4 +22,8 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> getFeedPosts(@Param("authors") Set<User> authors, @Param("lastId") Long lastId, Pageable pageable);
 
     List<Post> findAllByOrderByCreatedAtDesc();
+
+    List<Post> findByAuthor(User author);
+
+    List<Post> findByLikesContaining(User user);
 }

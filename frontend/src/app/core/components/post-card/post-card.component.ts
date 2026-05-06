@@ -7,11 +7,12 @@ import { PostService } from '../../services/post.service';
 import { AdminService } from '../../services/admin.service';
 import { ConfirmationService } from '../../services/confirmation.service';
 import { ReportModalComponent } from '../report-modal/report-modal.component';
+import { TimeDisplayPipe } from '../../pipes/time-display.pipe';
 
 @Component({
   selector: 'app-post-card',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, ReportModalComponent],
+  imports: [CommonModule, FormsModule, RouterModule, ReportModalComponent, TimeDisplayPipe],
   templateUrl: './post-card.html',
   styleUrls: ['./post-card.scss']
 })

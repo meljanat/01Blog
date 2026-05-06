@@ -11,7 +11,9 @@
                 <a [routerLink]="['/user', post.author.username]" class="author clickable-author">
                     {{ post.author.username }}
                 </a>
-                <span class="timestamp">{{ post.createdAt | date:'short' }}</span>
+                <span class="timestamp" [title]="post.createdAt | timeDisplay:'full'">
+                    {{ post.createdAt | timeDisplay }}
+                </span>
             </div>
         </div>
 
@@ -110,7 +112,9 @@
                                 class="comment-author clickable-author">
                                 {{ comment.author.username }}
                             </a>
-                            <span class="comment-time">{{ comment.createdAt | date:'shortTime' }}</span>
+                            <span class="comment-time" [title]="comment.createdAt | timeDisplay:'full'">
+                                {{ comment.createdAt | timeDisplay }}
+                            </span>
                         </div>
 
                         <div class="comment-actions">

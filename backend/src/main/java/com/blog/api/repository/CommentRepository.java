@@ -8,10 +8,14 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.blog.api.model.Comment;
+import com.blog.api.model.User;
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {
 
     @Query("SELECT c FROM Comment c WHERE c.post.id = :postId AND (:lastId IS NULL OR c.id < :lastId) ORDER BY c.id DESC")
     List<Comment> getPostComments(@Param("postId") Long postId, @Param("lastId") Long lastId, Pageable pageable);
 
+    boolean existsByPostIdAndAuthorIdAndIdNot(Long postId, Long authorId, Long id);
+
+    void deleteByAuthor(User author);
 }

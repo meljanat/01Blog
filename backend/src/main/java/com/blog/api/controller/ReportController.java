@@ -38,6 +38,11 @@ public class ReportController {
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
             String targetTypeStr = payload.get("targetType");
+            if (targetTypeStr == null || payload.get("targetId") == null) {
+                return ResponseEntity.badRequest().body("Report target is required.");
+            }
+            targetTypeStr = targetTypeStr.toUpperCase();
+
             Long targetId = Long.valueOf(payload.get("targetId"));
             String reason = payload.get("reason");
 
@@ -57,12 +62,16 @@ public class ReportController {
                 default -> throw new RuntimeException("Unknown target type");
             }
 
+            if (reportedUser.getId().equals(reporter.getId())) {
+                return ResponseEntity.badRequest().body("You cannot report your own content.");
+            }
+
             Report report = new Report();
             report.setReporter(reporter);
             report.setReported(reportedUser);
-            report.setTargetType(ReportType.valueOf(targetTypeStr.toUpperCase()));
+            report.setTargetType(ReportType.valueOf(targetTypeStr));
             report.setTargetId(targetId);
-            report.setReason(reason);
+            report.setReason(reason.trim());
 
             reportRepository.save(report);
             return ResponseEntity.ok("Report submitted successfully to the admin team.");

@@ -27,6 +27,10 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),
                 user.getPassword(),
+                !Boolean.TRUE.equals(user.getIsBanned()),
+                true,
+                true,
+                true,
                 Collections.singletonList(new SimpleGrantedAuthority(user.getRole().name())));
     }
 }
