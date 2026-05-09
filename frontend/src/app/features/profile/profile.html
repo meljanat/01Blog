@@ -16,6 +16,12 @@
             <p class="bio">{{ userProfile.bio || 'This user has no bio yet.' }}</p>
 
             <div class="profile-stats">
+                <div class="stat metric">
+                    <strong>{{ userProfile.postsCount || 0 }}</strong> Posts
+                </div>
+                <div class="stat metric">
+                    <strong>{{ userProfile.commentsCount || 0 }}</strong> Comments
+                </div>
                 <button class="stat" [disabled]="isProfileBannedForViewer()" (click)="openRelationships('followers')">
                     <strong>{{ userProfile.followersCount }}</strong> Followers
                 </button>

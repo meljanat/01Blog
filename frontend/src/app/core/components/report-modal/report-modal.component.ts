@@ -44,7 +44,6 @@ export class ReportModalComponent {
       next: (res) => {
         this.successMessage = 'Report submitted successfully.';
         this.isSubmitting = false;
-        // Auto-close after 2 seconds
         setTimeout(() => this.close(), 2000);
       },
       error: (err) => {

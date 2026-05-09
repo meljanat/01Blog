@@ -7,6 +7,8 @@ export interface UserProfile {
   username: string;
   bio?: string;
   profilePictureUrl?: string;
+  postsCount: number;
+  commentsCount: number;
   followersCount: number;
   followingCount: number;
   isBanned: boolean;

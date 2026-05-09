@@ -1,0 +1,18 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:blog_test;MODE=PostgreSQL;DATABASE_TO_UPPER=false;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+
+blog:
+  app:
+    jwtSecret: test-secret-key-for-ci-and-local-tests-32-bytes-minimum
+    jwtExpirationMs: 86400000
+    jwtCookieName: BLOG_SESSION
+    cookieSecure: false
+  upload:
+    path: ${java.io.tmpdir}/01blog-test-uploads

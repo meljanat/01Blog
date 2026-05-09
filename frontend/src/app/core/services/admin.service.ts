@@ -2,10 +2,36 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
+export interface AdminAnalytics {
+  users: {
+    total: number;
+    active: number;
+    banned: number;
+    admins: number;
+  };
+  posts: {
+    total: number;
+    visible: number;
+    hidden: number;
+  };
+  reports: {
+    total: number;
+    unresolved: number;
+    resolved: number;
+  };
+  comments: {
+    total: number;
+  };
+}
+
 @Injectable({ providedIn: 'root' })
 export class AdminService {
   private apiUrl = 'http://localhost:8080/api/admin';
   private http = inject(HttpClient);
+
+  getAnalytics(): Observable<AdminAnalytics> {
+    return this.http.get<AdminAnalytics>(`${this.apiUrl}/analytics`);
+  }
 
   getAllUsers(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/users`);

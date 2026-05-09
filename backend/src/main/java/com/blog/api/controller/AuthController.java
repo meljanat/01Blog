@@ -24,6 +24,7 @@ import com.blog.api.model.User;
 import com.blog.api.repository.UserRepository;
 import com.blog.api.security.JwtUtils;
 import com.blog.api.service.FileStorageService;
+import com.blog.api.service.InputSanitizer;
 import com.blog.api.service.ModerationService;
 
 @RestController
@@ -36,16 +37,18 @@ public class AuthController {
     private final JwtUtils jwtUtils;
     private final FileStorageService fileStorageService;
     private final ModerationService moderationService;
+    private final InputSanitizer inputSanitizer;
 
     public AuthController(AuthenticationManager authenticationManager, UserRepository userRepository,
             PasswordEncoder encoder, JwtUtils jwtUtils, FileStorageService fileStorageService,
-            ModerationService moderationService) {
+            ModerationService moderationService, InputSanitizer inputSanitizer) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.encoder = encoder;
         this.jwtUtils = jwtUtils;
         this.fileStorageService = fileStorageService;
         this.moderationService = moderationService;
+        this.inputSanitizer = inputSanitizer;
     }
 
     @PostMapping("/register")
@@ -72,16 +75,16 @@ public class AuthController {
                 return ResponseEntity.badRequest().body("Error: Email is already in use!");
             }
 
+            String sanitizedBio = inputSanitizer.optionalText(bio, "Bio", 500);
             String profilePicUrl = fileStorageService.saveImageFile(file);
 
             User user = new User();
             user.setUsername(username);
             user.setEmail(email);
             user.setPassword(encoder.encode(password));
-            user.setBio(bio);
+            user.setBio(sanitizedBio);
             user.setProfilePictureUrl(profilePicUrl);
 
-            // First user gets Admin, everyone else gets User
             if (userRepository.count() == 0) {
                 user.setRole(Role.ROLE_ADMIN);
             } else {

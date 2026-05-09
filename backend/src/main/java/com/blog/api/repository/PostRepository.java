@@ -49,4 +49,19 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findByAuthor(User author);
 
     List<Post> findByLikesContaining(User user);
+
+    long countByAuthor(User author);
+
+    @Query("""
+            SELECT COUNT(p) FROM Post p
+            WHERE p.author = :author
+              AND (p.hidden = false OR p.hidden IS NULL)
+            """)
+    long countVisibleByAuthor(@Param("author") User author);
+
+    @Query("SELECT COUNT(p) FROM Post p WHERE p.hidden = true")
+    long countHiddenPosts();
+
+    @Query("SELECT COUNT(p) FROM Post p WHERE p.hidden = false OR p.hidden IS NULL")
+    long countVisiblePosts();
 }

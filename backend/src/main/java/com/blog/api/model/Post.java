@@ -53,7 +53,6 @@ public class Post {
     @Builder.Default
     private Boolean hidden = false;
 
-    // Hibernate will automatically set this to the current time when saved
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime createdAt;

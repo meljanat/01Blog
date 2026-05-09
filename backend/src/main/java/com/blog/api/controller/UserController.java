@@ -22,10 +22,14 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.blog.api.model.NotificationType;
+import com.blog.api.model.Role;
 import com.blog.api.service.FileStorageService;
+import com.blog.api.service.InputSanitizer;
 import com.blog.api.service.ModerationService;
 import com.blog.api.service.NotificationService;
 import com.blog.api.model.User;
+import com.blog.api.repository.CommentRepository;
+import com.blog.api.repository.PostRepository;
 import com.blog.api.repository.UserRepository;
 
 @RestController
@@ -36,13 +40,20 @@ public class UserController {
     private final NotificationService notificationService;
     private final FileStorageService fileStorageService;
     private final ModerationService moderationService;
+    private final PostRepository postRepository;
+    private final CommentRepository commentRepository;
+    private final InputSanitizer inputSanitizer;
 
     public UserController(UserRepository userRepository, NotificationService notificationService,
-            FileStorageService fileStorageService, ModerationService moderationService) {
+            FileStorageService fileStorageService, ModerationService moderationService,
+            PostRepository postRepository, CommentRepository commentRepository, InputSanitizer inputSanitizer) {
         this.userRepository = userRepository;
         this.notificationService = notificationService;
         this.fileStorageService = fileStorageService;
         this.moderationService = moderationService;
+        this.postRepository = postRepository;
+        this.commentRepository = commentRepository;
+        this.inputSanitizer = inputSanitizer;
     }
 
     @GetMapping("/{username}")
@@ -52,12 +63,22 @@ public class UserController {
         targetUser = moderationService.refreshBanStatus(targetUser);
 
         boolean isFollowing = false;
+        boolean isAdminViewer = false;
         if (principal != null) {
             User currentUser = userRepository.findByUsername(principal.getName()).orElse(null);
             if (currentUser != null) {
+                isAdminViewer = currentUser.getRole() == Role.ROLE_ADMIN;
                 isFollowing = targetUser.getFollowers().stream()
                         .anyMatch(follower -> follower.getId().equals(currentUser.getId()));
             }
+        }
+
+        boolean targetIsBanned = moderationService.hasActiveBan(targetUser);
+        long postsCount = isAdminViewer
+                ? postRepository.countByAuthor(targetUser)
+                : postRepository.countVisibleByAuthor(targetUser);
+        if (targetIsBanned && !isAdminViewer) {
+            postsCount = 0;
         }
 
         Map<String, Object> profileData = new HashMap<>();
@@ -65,9 +86,11 @@ public class UserController {
         profileData.put("username", targetUser.getUsername());
         profileData.put("bio", targetUser.getBio());
         profileData.put("profilePictureUrl", targetUser.getProfilePictureUrl());
+        profileData.put("postsCount", postsCount);
+        profileData.put("commentsCount", commentRepository.countByAuthor(targetUser));
         profileData.put("followersCount", targetUser.getFollowers().size());
         profileData.put("followingCount", targetUser.getFollowing().size());
-        profileData.put("isBanned", moderationService.hasActiveBan(targetUser));
+        profileData.put("isBanned", targetIsBanned);
         profileData.put("banReason", targetUser.getBanReason());
         profileData.put("bannedUntil", targetUser.getBannedUntil());
         profileData.put("banTimeLeft", targetUser.getBannedUntil() == null ? null : formatRemainingBanTime(targetUser));
@@ -86,7 +109,7 @@ public class UserController {
             User user = userRepository.findByUsername(principal.getName())
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
-            user.setBio(bio);
+            user.setBio(inputSanitizer.optionalText(bio, "Bio", 500));
 
             if (profilePicture != null && !profilePicture.isEmpty()) {
                 String previousProfilePicture = user.getProfilePictureUrl();

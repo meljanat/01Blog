@@ -12,6 +12,10 @@ public interface ReportRepository extends JpaRepository<Report, Long> {
 
     List<Report> findByResolvedFalseOrderByCreatedAtAsc();
 
+    long countByResolvedFalse();
+
+    long countByResolvedTrue();
+
     void deleteByReporterOrReported(User reporter, User reported);
 
     void deleteByTargetTypeAndTargetId(ReportType targetType, Long targetId);

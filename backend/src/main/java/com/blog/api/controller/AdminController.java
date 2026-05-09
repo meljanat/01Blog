@@ -60,6 +60,28 @@ public class AdminController {
         return ResponseEntity.ok(reportRepository.findByResolvedFalseOrderByCreatedAtAsc());
     }
 
+    @GetMapping("/analytics")
+    public ResponseEntity<Map<String, Object>> getAnalytics() {
+        Map<String, Object> analytics = Map.of(
+                "users", Map.of(
+                        "total", userRepository.count(),
+                        "active", userRepository.countActiveUsers(),
+                        "banned", userRepository.countActiveBannedUsers(),
+                        "admins", userRepository.countByRole(Role.ROLE_ADMIN)),
+                "posts", Map.of(
+                        "total", postRepository.count(),
+                        "visible", postRepository.countVisiblePosts(),
+                        "hidden", postRepository.countHiddenPosts()),
+                "reports", Map.of(
+                        "total", reportRepository.count(),
+                        "unresolved", reportRepository.countByResolvedFalse(),
+                        "resolved", reportRepository.countByResolvedTrue()),
+                "comments", Map.of(
+                        "total", commentRepository.count()));
+
+        return ResponseEntity.ok(analytics);
+    }
+
     @PutMapping("/reports/{id}/resolve")
     public ResponseEntity<?> resolveReport(@PathVariable Long id) {
         Report report = reportRepository.findById(id)

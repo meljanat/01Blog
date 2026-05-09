@@ -24,7 +24,7 @@ spring:
 # Custom JWT and File Storage Properties
 blog:
   app:
-    jwtSecret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+    jwtSecret: ${JWT_SECRET}
     jwtExpirationMs: ${JWT_EXPIRATION_MS:86400000} # 24 hours
   upload:
     path: ${UPLOAD_PATH:./uploads}

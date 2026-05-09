@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import com.blog.api.model.Role;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -28,4 +30,21 @@ public interface UserRepository extends JpaRepository<User, Long> {
       ORDER BY function('random')
       """)
   List<User> findRandomSuggestedUsers(@Param("currentUsername") String currentUsername, Pageable pageable);
+
+  long countByRole(Role role);
+
+  @Query("""
+      SELECT COUNT(u) FROM User u
+      WHERE u.isBanned = true
+        AND (u.bannedUntil IS NULL OR u.bannedUntil > CURRENT_TIMESTAMP)
+      """)
+  long countActiveBannedUsers();
+
+  @Query("""
+      SELECT COUNT(u) FROM User u
+      WHERE u.isBanned = false
+         OR u.isBanned IS NULL
+         OR (u.bannedUntil IS NOT NULL AND u.bannedUntil <= CURRENT_TIMESTAMP)
+      """)
+  long countActiveUsers();
 }

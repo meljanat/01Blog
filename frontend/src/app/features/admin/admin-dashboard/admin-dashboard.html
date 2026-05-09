@@ -1,0 +1,67 @@
+<div class="analytics-page">
+    <div class="analytics-header">
+        <h2>📊 Analytics</h2>
+        <p class="subtitle">Platform totals and moderation workload.</p>
+    </div>
+
+    <div *ngIf="isLoading" class="loading-state">Loading analytics...</div>
+
+    <ng-container *ngIf="!isLoading && analytics">
+        <section class="metric-grid">
+            <div class="metric-card">
+                <span class="metric-label">Users</span>
+                <strong>{{ analytics.users.total }}</strong>
+                <span class="metric-note">{{ analytics.users.active }} active - {{ analytics.users.banned }} banned</span>
+            </div>
+
+            <div class="metric-card">
+                <span class="metric-label">Posts</span>
+                <strong>{{ analytics.posts.total }}</strong>
+                <span class="metric-note">{{ analytics.posts.visible }} visible - {{ analytics.posts.hidden }} hidden</span>
+            </div>
+
+            <div class="metric-card urgent" [class.clear]="analytics.reports.unresolved === 0">
+                <span class="metric-label">Reports</span>
+                <strong>{{ analytics.reports.unresolved }}</strong>
+                <span class="metric-note">{{ analytics.reports.total }} total - {{ analytics.reports.resolved }} resolved</span>
+            </div>
+
+            <div class="metric-card">
+                <span class="metric-label">Comments</span>
+                <strong>{{ analytics.comments.total }}</strong>
+                <span class="metric-note">{{ analytics.users.admins }} admin account{{ analytics.users.admins === 1 ? '' : 's' }}</span>
+            </div>
+        </section>
+
+        <section class="breakdown-grid">
+            <div class="breakdown-panel">
+                <div class="breakdown-title">Content Visibility</div>
+                <div class="bar-row">
+                    <span>Visible posts</span>
+                    <strong>{{ analytics.posts.visible }}</strong>
+                </div>
+                <div class="bar-track">
+                    <div class="bar-fill visible"
+                        [style.width.%]="analytics.posts.total ? (analytics.posts.visible / analytics.posts.total) * 100 : 0">
+                    </div>
+                </div>
+
+                <div class="bar-row">
+                    <span>Hidden posts</span>
+                    <strong>{{ analytics.posts.hidden }}</strong>
+                </div>
+                <div class="bar-track">
+                    <div class="bar-fill hidden"
+                        [style.width.%]="analytics.posts.total ? (analytics.posts.hidden / analytics.posts.total) * 100 : 0">
+                    </div>
+                </div>
+            </div>
+
+            <div class="breakdown-panel">
+                <div class="breakdown-title">Report Queue</div>
+                <div class="queue-number">{{ analytics.reports.unresolved }}</div>
+                <p>{{ analytics.reports.unresolved === 1 ? 'report needs review' : 'reports need review' }}</p>
+            </div>
+        </section>
+    </ng-container>
+</div>

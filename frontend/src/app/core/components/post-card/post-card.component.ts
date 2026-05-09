@@ -128,14 +128,27 @@ export class PostCardComponent {
 
   toggleHidden() {
     const nextHiddenState = !this.post.hidden;
-    this.adminService.setPostHidden(this.post.id, nextHiddenState).subscribe({
-      next: (updatedPost) => {
-        this.post.hidden = Boolean(updatedPost.hidden);
-        if (this.post.hidden && !this.isDetailView) {
-          this.postDeleted.emit(this.post.id);
-        }
-      },
-      error: (err) => console.error('Failed to update post visibility', err)
+    const actionLabel = nextHiddenState ? 'Hide Post' : 'Unhide Post';
+    const author = this.post.author?.username ? `@${this.post.author.username}` : 'this author';
+
+    this.confirmationService.requireConfirmation({
+      title: actionLabel,
+      message: nextHiddenState
+        ? `Hide ${author}'s post from feeds and public profile views?`
+        : `Make ${author}'s post visible again?`,
+      confirmText: actionLabel,
+      isDanger: nextHiddenState,
+      action: () => {
+        this.adminService.setPostHidden(this.post.id, nextHiddenState).subscribe({
+          next: (updatedPost) => {
+            this.post.hidden = Boolean(updatedPost.hidden);
+            if (this.post.hidden && !this.isDetailView) {
+              this.postDeleted.emit(this.post.id);
+            }
+          },
+          error: (err) => console.error('Failed to update post visibility', err)
+        });
+      }
     });
   }
 

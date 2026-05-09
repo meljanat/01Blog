@@ -14,6 +14,7 @@ import com.blog.api.model.ReportType;
 import com.blog.api.model.User;
 import com.blog.api.repository.ReportRepository;
 import com.blog.api.repository.UserRepository;
+import com.blog.api.service.InputSanitizer;
 import com.blog.api.service.ModerationService;
 import com.blog.api.repository.PostRepository;
 
@@ -25,13 +26,15 @@ public class ReportController {
     private final UserRepository userRepository;
     private final PostRepository postRepository;
     private final ModerationService moderationService;
+    private final InputSanitizer inputSanitizer;
 
     public ReportController(ReportRepository reportRepository, UserRepository userRepository,
-            PostRepository postRepository, ModerationService moderationService) {
+            PostRepository postRepository, ModerationService moderationService, InputSanitizer inputSanitizer) {
         this.reportRepository = reportRepository;
         this.userRepository = userRepository;
         this.postRepository = postRepository;
         this.moderationService = moderationService;
+        this.inputSanitizer = inputSanitizer;
     }
 
     @PostMapping
@@ -45,13 +48,15 @@ public class ReportController {
                 return ResponseEntity.badRequest().body("Report target is required.");
             }
             targetTypeStr = targetTypeStr.toUpperCase();
+            ReportType targetType;
+            try {
+                targetType = ReportType.valueOf(targetTypeStr);
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.badRequest().body("Invalid report type.");
+            }
 
             Long targetId = Long.valueOf(payload.get("targetId"));
-            String reason = payload.get("reason");
-
-            if (reason == null || reason.trim().isEmpty()) {
-                return ResponseEntity.badRequest().body("A justification reason is required.");
-            }
+            String reason = inputSanitizer.requiredText(payload.get("reason"), "Report reason", 1000);
 
             User reportedUser = null;
             switch (targetTypeStr) {
@@ -81,15 +86,13 @@ public class ReportController {
             Report report = new Report();
             report.setReporter(reporter);
             report.setReported(reportedUser);
-            report.setTargetType(ReportType.valueOf(targetTypeStr));
+            report.setTargetType(targetType);
             report.setTargetId(targetId);
-            report.setReason(reason.trim());
+            report.setReason(reason);
 
             reportRepository.save(report);
             return ResponseEntity.ok("Report submitted successfully to the admin team.");
 
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body("Invalid report type.");
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body("Error submitting report: " + e.getMessage());
         }

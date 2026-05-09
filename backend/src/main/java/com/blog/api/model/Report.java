@@ -2,7 +2,7 @@ package com.blog.api.model;
 
 import java.time.LocalDateTime;
 
-import org.hibernate.annotations.CreationTimestamp; // 🚨 New Import
+import org.hibernate.annotations.CreationTimestamp;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

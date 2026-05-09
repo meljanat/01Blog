@@ -55,11 +55,24 @@ export class AdminPostsComponent implements OnInit {
 
   togglePostVisibility(post: any) {
     const hidden = !post.hidden;
-    this.adminService.setPostHidden(post.id, hidden).subscribe({
-      next: (updatedPost) => {
-        Object.assign(post, updatedPost);
-      },
-      error: (err) => console.error('Failed to update post visibility', err)
+    const actionLabel = hidden ? 'Hide Post' : 'Unhide Post';
+    const author = post.author?.username ? `@${post.author.username}` : 'this author';
+
+    this.confirmationService.requireConfirmation({
+      title: actionLabel,
+      message: hidden
+        ? `Hide ${author}'s post from feeds and public profile views?`
+        : `Make ${author}'s post visible again?`,
+      confirmText: actionLabel,
+      isDanger: hidden,
+      action: () => {
+        this.adminService.setPostHidden(post.id, hidden).subscribe({
+          next: (updatedPost) => {
+            Object.assign(post, updatedPost);
+          },
+          error: (err) => console.error('Failed to update post visibility', err)
+        });
+      }
     });
   }
 }

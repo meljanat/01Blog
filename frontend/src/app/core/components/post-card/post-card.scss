@@ -17,9 +17,6 @@
         font-weight: 700;
     }
 
-    // ==========================================
-    // 1. Header Section
-    // ==========================================
     .post-header {
         display: flex;
         justify-content: space-between;
@@ -35,7 +32,6 @@
                 width: 40px;
                 height: 40px;
                 background: #dc2626;
-                /* Dark Red */
                 border-radius: 50%;
                 display: flex;
                 align-items: center;
@@ -117,9 +113,6 @@
         font-size: 0.85rem;
     }
 
-    // ==========================================
-    // 2. Main Content
-    // ==========================================
     .post-text {
         color: #d4d4d8;
         line-height: 1.6;
@@ -144,9 +137,6 @@
         display: block;
     }
 
-    // ==========================================
-    // 3. Post Actions (Like, Comment, View)
-    // ==========================================
     .post-actions {
         margin-top: 1rem;
         padding-top: 1rem;
@@ -204,9 +194,6 @@
         }
     }
 
-    // ==========================================
-    // 4. Comments Section
-    // ==========================================
     .comments-section {
         margin-top: 1rem;
         padding-top: 1rem;
@@ -384,9 +371,6 @@
         }
     }
 
-    // ==========================================
-    // 5. In-line Edit Mode
-    // ==========================================
     .edit-mode-container {
         margin-bottom: 1rem;
 

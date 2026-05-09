@@ -31,6 +31,7 @@ import com.blog.api.repository.CommentRepository;
 import com.blog.api.repository.PostRepository;
 import com.blog.api.repository.UserRepository;
 import com.blog.api.service.FileStorageService;
+import com.blog.api.service.InputSanitizer;
 import com.blog.api.service.ModerationService;
 import com.blog.api.service.NotificationService;
 
@@ -44,16 +45,19 @@ public class PostController {
     private final CommentRepository commentRepository;
     private final NotificationService notificationService;
     private final ModerationService moderationService;
+    private final InputSanitizer inputSanitizer;
 
     public PostController(PostRepository postRepository, UserRepository userRepository,
             FileStorageService fileStorageService, CommentRepository commentRepository,
-            NotificationService notificationService, ModerationService moderationService) {
+            NotificationService notificationService, ModerationService moderationService,
+            InputSanitizer inputSanitizer) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
         this.fileStorageService = fileStorageService;
         this.commentRepository = commentRepository;
         this.notificationService = notificationService;
         this.moderationService = moderationService;
+        this.inputSanitizer = inputSanitizer;
     }
 
     @GetMapping
@@ -163,9 +167,7 @@ public class PostController {
             @RequestBody String text,
             Principal principal) {
 
-        if (text == null || text.trim().isEmpty()) {
-            return ResponseEntity.badRequest().build();
-        }
+        String sanitizedText = inputSanitizer.requiredText(text, "Comment text", 1000);
 
         Post post = postRepository.findById(postId).orElseThrow(() -> new RuntimeException("Post not found"));
         User author = userRepository.findByUsername(principal.getName())
@@ -176,7 +178,7 @@ public class PostController {
         }
 
         Comment comment = Comment.builder()
-                .text(text.trim())
+                .text(sanitizedText)
                 .author(author)
                 .post(post)
                 .build();
@@ -198,15 +200,13 @@ public class PostController {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
 
-        if (newText == null || newText.trim().isEmpty()) {
-            return ResponseEntity.badRequest().body("Post text cannot be empty.");
-        }
+        String sanitizedText = inputSanitizer.requiredText(newText, "Post text", 2000);
 
         if (!post.getAuthor().getUsername().equals(principal.getName())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You can only edit your own posts.");
         }
 
-        post.setText(newText.trim());
+        post.setText(sanitizedText);
         postRepository.save(post);
 
         return ResponseEntity.ok(post);
@@ -224,15 +224,13 @@ public class PostController {
             Post post = postRepository.findById(postId)
                     .orElseThrow(() -> new RuntimeException("Post not found"));
 
-            if (newText == null || newText.trim().isEmpty()) {
-                return ResponseEntity.badRequest().body("Post text cannot be empty.");
-            }
+            String sanitizedText = inputSanitizer.requiredText(newText, "Post text", 2000);
 
             if (!post.getAuthor().getUsername().equals(principal.getName())) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You can only edit your own posts.");
             }
 
-            post.setText(newText.trim());
+            post.setText(sanitizedText);
 
             if (removeMedia || (file != null && !file.isEmpty())) {
                 fileStorageService.deleteFile(post.getMediaUrl());
@@ -269,9 +267,7 @@ public class PostController {
     @PutMapping("/{postId}/comments/{commentId}")
     public ResponseEntity<?> editComment(@PathVariable Long postId, @PathVariable Long commentId,
             @RequestBody String newText, Principal principal) {
-        if (newText == null || newText.trim().isEmpty()) {
-            return ResponseEntity.badRequest().body("Comment text cannot be empty.");
-        }
+        String sanitizedText = inputSanitizer.requiredText(newText, "Comment text", 1000);
 
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
@@ -285,7 +281,7 @@ public class PostController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You can only edit your own comments.");
         }
 
-        comment.setText(newText.trim());
+        comment.setText(sanitizedText);
         postRepository.save(post);
 
         return ResponseEntity.ok(comment);
@@ -319,9 +315,7 @@ public class PostController {
             Authentication authentication) {
 
         try {
-            if (text == null || text.trim().isEmpty()) {
-                return ResponseEntity.badRequest().body("Post text cannot be empty.");
-            }
+            String sanitizedText = inputSanitizer.requiredText(text, "Post text", 2000);
 
             String username = authentication.getName();
             User author = userRepository.findByUsername(username)
@@ -335,7 +329,7 @@ public class PostController {
             }
 
             Post post = Post.builder()
-                    .text(text.trim())
+                    .text(sanitizedText)
                     .mediaUrl(mediaUrl)
                     .mediaType(mediaType)
                     .author(author)

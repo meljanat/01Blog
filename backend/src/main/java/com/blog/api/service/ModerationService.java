@@ -35,16 +35,19 @@ public class ModerationService {
     private final ReportRepository reportRepository;
     private final NotificationRepository notificationRepository;
     private final FileStorageService fileStorageService;
+    private final InputSanitizer inputSanitizer;
 
     public ModerationService(UserRepository userRepository, PostRepository postRepository,
             CommentRepository commentRepository, ReportRepository reportRepository,
-            NotificationRepository notificationRepository, FileStorageService fileStorageService) {
+            NotificationRepository notificationRepository, FileStorageService fileStorageService,
+            InputSanitizer inputSanitizer) {
         this.userRepository = userRepository;
         this.postRepository = postRepository;
         this.commentRepository = commentRepository;
         this.reportRepository = reportRepository;
         this.notificationRepository = notificationRepository;
         this.fileStorageService = fileStorageService;
+        this.inputSanitizer = inputSanitizer;
     }
 
     @Transactional
@@ -197,10 +200,11 @@ public class ModerationService {
     }
 
     private String normalizeBanReason(String reason) {
-        if (reason == null || reason.trim().isEmpty()) {
+        String sanitizedReason = inputSanitizer.optionalText(reason, "Ban reason", 1000);
+        if (sanitizedReason == null || sanitizedReason.isBlank()) {
             return "Violation of platform rules.";
         }
-        return reason.trim();
+        return sanitizedReason;
     }
 
     private LocalDateTime resolveBanEnd(String durationKey) {
