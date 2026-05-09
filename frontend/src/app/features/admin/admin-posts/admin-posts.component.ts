@@ -52,4 +52,14 @@ export class AdminPostsComponent implements OnInit {
       }
     });
   }
+
+  togglePostVisibility(post: any) {
+    const hidden = !post.hidden;
+    this.adminService.setPostHidden(post.id, hidden).subscribe({
+      next: (updatedPost) => {
+        Object.assign(post, updatedPost);
+      },
+      error: (err) => console.error('Failed to update post visibility', err)
+    });
+  }
 }

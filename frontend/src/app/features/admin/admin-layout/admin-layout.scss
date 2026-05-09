@@ -2,6 +2,7 @@
     display: flex;
     min-height: 100vh;
     background: #121212;
+    min-width: 0;
 }
 
 .admin-sidebar {
@@ -10,6 +11,10 @@
     border-right: 1px solid #333;
     display: flex;
     flex-direction: column;
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
 }
 
 .sidebar-header {
@@ -31,6 +36,7 @@
     padding: 1.5rem 0;
     display: flex;
     flex-direction: column;
+    gap: 0.15rem;
 }
 
 .nav-item {
@@ -42,6 +48,7 @@
     display: flex;
     align-items: center;
     gap: 0.8rem;
+    min-height: 48px;
 }
 
 .nav-item:hover {
@@ -69,4 +76,93 @@
     flex: 1;
     padding: 2.5rem;
     overflow-y: auto;
+    min-width: 0;
+}
+
+@media (max-width: 980px) {
+    .admin-container {
+        flex-direction: column;
+    }
+
+    .admin-sidebar {
+        width: 100%;
+        height: auto;
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        border-right: 0;
+        border-bottom: 1px solid #333;
+    }
+
+    .sidebar-header {
+        padding: 1rem 1.25rem 0.75rem;
+    }
+
+    .sidebar-nav {
+        padding: 0.75rem;
+        flex-direction: row;
+        gap: 0.5rem;
+        overflow-x: auto;
+        overscroll-behavior-inline: contain;
+        scrollbar-width: thin;
+    }
+
+    .nav-item {
+        white-space: nowrap;
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        min-height: 42px;
+        flex-shrink: 0;
+    }
+
+    .nav-item.active {
+        border-right: 0;
+        box-shadow: inset 0 -2px 0 #ef4444;
+    }
+
+    .divider {
+        width: 1px;
+        height: auto;
+        margin: 0 0.25rem;
+        flex-shrink: 0;
+    }
+
+    .admin-main {
+        padding: 1.25rem;
+    }
+}
+
+@media (max-width: 520px) {
+    .sidebar-header {
+        padding: 0.85rem 1rem 0.5rem;
+    }
+
+    .sidebar-header h2 {
+        font-size: 1.2rem;
+    }
+
+    .sidebar-nav {
+        padding: 0.6rem 0.75rem;
+        gap: 0.4rem;
+    }
+
+    .nav-item {
+        font-size: 0.9rem;
+        padding: 0.65rem 0.85rem;
+    }
+
+    .admin-main {
+        padding: 0.75rem;
+    }
+}
+
+@media (max-width: 380px) {
+    .sidebar-header h2 {
+        font-size: 1.05rem;
+    }
+
+    .nav-item {
+        font-size: 0.82rem;
+        padding: 0.55rem 0.7rem;
+    }
 }

@@ -1,7 +1,7 @@
 <div class="dashboard-panel">
     <div class="panel-header">
         <h2>📝 Manage Posts</h2>
-        <p class="subtitle">Global feed oversight. Admins can permanently remove content here.</p>
+        <p class="subtitle">Global feed oversight. Hide content from users or permanently remove it.</p>
     </div>
 
     <div *ngIf="isLoading" class="loading-state">Loading posts...</div>
@@ -19,35 +19,45 @@
                     <th>Author</th>
                     <th>Content Snippet</th>
                     <th>Media</th>
+                    <th>Status</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
                 <tr *ngFor="let post of posts">
-                    <td class="id-cell">#{{ post.id }}</td>
-                    <td class="date-cell" [title]="post.createdAt | timeDisplay:'full'">
+                    <td class="id-cell" data-label="ID">#{{ post.id }}</td>
+                    <td class="date-cell" data-label="Date" [title]="post.createdAt | timeDisplay:'full'">
                         {{ post.createdAt | timeDisplay:'dateTime' }}
                     </td>
 
-                    <td>
+                    <td data-label="Author">
                         <span class="author-name">@{{ post.author.username }}</span>
                     </td>
 
-                    <td class="content-cell">
+                    <td class="content-cell" data-label="Content">
                         "{{ (post.text && post.text.length > 50) ? (post.text | slice:0:50) + '...' : (post.text || 'No
                         text') }}"
                     </td>
 
-                    <td>
+                    <td data-label="Media">
                         <span class="media-badge" [ngClass]="post.mediaUrl ? 'yes' : 'no'">
                             {{ post.mediaUrl ? 'Media' : 'None' }}
                         </span>
                     </td>
 
-                    <td class="actions-cell">
+                    <td data-label="Status">
+                        <span class="visibility-badge" [ngClass]="post.hidden ? 'hidden' : 'visible'">
+                            {{ post.hidden ? 'Hidden' : 'Visible' }}
+                        </span>
+                    </td>
+
+                    <td class="actions-cell" data-label="Actions">
                         <a [routerLink]="['/post', post.id]" class="view-link">
                             View
                         </a>
+                        <button class="hide-btn" [class.is-hidden]="post.hidden" (click)="togglePostVisibility(post)">
+                            {{ post.hidden ? 'Unhide' : 'Hide' }}
+                        </button>
                         <button class="force-delete-btn" (click)="deletePostAsAdmin(post.id)">
                             Force Delete
                         </button>

@@ -8,6 +8,7 @@ import java.util.Set;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -24,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.blog.api.model.Comment;
 import com.blog.api.model.NotificationType;
 import com.blog.api.model.Post;
+import com.blog.api.model.Role;
 import com.blog.api.model.User;
 import com.blog.api.repository.CommentRepository;
 import com.blog.api.repository.PostRepository;
@@ -74,9 +76,12 @@ public class PostController {
     }
 
     @GetMapping("/{postId}")
-    public ResponseEntity<Post> getPostById(@PathVariable Long postId) {
+    public ResponseEntity<?> getPostById(@PathVariable Long postId, Principal principal) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
+        if (Boolean.TRUE.equals(post.getHidden()) && !isAdmin(principal)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Post not found");
+        }
         return ResponseEntity.ok(post);
     }
 
@@ -84,7 +89,14 @@ public class PostController {
     public ResponseEntity<List<Comment>> getPaginatedComments(
             @PathVariable Long postId,
             @RequestParam(required = false) Long lastId,
-            @RequestParam(defaultValue = "5") int size) {
+            @RequestParam(defaultValue = "5") int size,
+            Principal principal) {
+
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post not found"));
+        if (Boolean.TRUE.equals(post.getHidden()) && !isAdmin(principal)) {
+            return ResponseEntity.notFound().build();
+        }
 
         PageRequest limit = PageRequest.of(0, clampPageSize(size));
         List<Comment> comments = commentRepository.getPostComments(postId, lastId, limit);
@@ -95,10 +107,23 @@ public class PostController {
     public ResponseEntity<List<Post>> getPostsByUser(
             @PathVariable String username,
             @RequestParam(required = false) Long lastId,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "10") int size,
+            Principal principal) {
 
         PageRequest limit = PageRequest.of(0, clampPageSize(size));
-        List<Post> userPosts = postRepository.getProfilePosts(username, lastId, limit);
+
+        User profileOwner = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        profileOwner = moderationService.refreshBanStatus(profileOwner);
+
+        List<Post> userPosts;
+        if (isAdmin(principal)) {
+            userPosts = postRepository.getProfilePostsForAdmin(username, lastId, limit);
+        } else if (moderationService.hasActiveBan(profileOwner)) {
+            userPosts = List.of();
+        } else {
+            userPosts = postRepository.getProfilePosts(username, lastId, limit);
+        }
         return ResponseEntity.ok(userPosts);
     }
 
@@ -106,6 +131,10 @@ public class PostController {
     public ResponseEntity<Post> toggleLike(@PathVariable Long postId, Principal principal) {
         Post post = postRepository.findById(postId).orElseThrow();
         User user = userRepository.findByUsername(principal.getName()).orElseThrow();
+
+        if (Boolean.TRUE.equals(post.getHidden()) && !isAdmin(principal)) {
+            return ResponseEntity.notFound().build();
+        }
 
         if (post.getLikes().contains(user)) {
             post.getLikes().remove(user);
@@ -142,6 +171,10 @@ public class PostController {
         User author = userRepository.findByUsername(principal.getName())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        if (Boolean.TRUE.equals(post.getHidden()) && !isAdmin(principal)) {
+            return ResponseEntity.notFound().build();
+        }
+
         Comment comment = Comment.builder()
                 .text(text.trim())
                 .author(author)
@@ -160,7 +193,7 @@ public class PostController {
         return ResponseEntity.ok(savedComment);
     }
 
-    @PutMapping("/{postId}")
+    @PutMapping(value = "/{postId}", consumes = MediaType.TEXT_PLAIN_VALUE)
     public ResponseEntity<?> updatePost(@PathVariable Long postId, @RequestBody String newText, Principal principal) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
@@ -177,6 +210,47 @@ public class PostController {
         postRepository.save(post);
 
         return ResponseEntity.ok(post);
+    }
+
+    @PutMapping(value = "/{postId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> updatePostWithMedia(
+            @PathVariable Long postId,
+            @RequestParam("text") String newText,
+            @RequestParam(value = "file", required = false) MultipartFile file,
+            @RequestParam(value = "removeMedia", defaultValue = "false") boolean removeMedia,
+            Principal principal) {
+
+        try {
+            Post post = postRepository.findById(postId)
+                    .orElseThrow(() -> new RuntimeException("Post not found"));
+
+            if (newText == null || newText.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("Post text cannot be empty.");
+            }
+
+            if (!post.getAuthor().getUsername().equals(principal.getName())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You can only edit your own posts.");
+            }
+
+            post.setText(newText.trim());
+
+            if (removeMedia || (file != null && !file.isEmpty())) {
+                fileStorageService.deleteFile(post.getMediaUrl());
+                post.setMediaUrl(null);
+                post.setMediaType(null);
+            }
+
+            if (file != null && !file.isEmpty()) {
+                post.setMediaUrl(fileStorageService.savePostMedia(file));
+                post.setMediaType(file.getContentType());
+            }
+
+            postRepository.save(post);
+
+            return ResponseEntity.ok(post);
+        } catch (IOException e) {
+            return ResponseEntity.badRequest().body("Error updating post: " + e.getMessage());
+        }
     }
 
     @DeleteMapping("/{postId}")
@@ -288,5 +362,15 @@ public class PostController {
 
     private int clampPageSize(int size) {
         return Math.min(Math.max(size, 1), 50);
+    }
+
+    private boolean isAdmin(Principal principal) {
+        if (principal == null) {
+            return false;
+        }
+
+        return userRepository.findByUsername(principal.getName())
+                .map(user -> user.getRole() == Role.ROLE_ADMIN)
+                .orElse(false);
     }
 }

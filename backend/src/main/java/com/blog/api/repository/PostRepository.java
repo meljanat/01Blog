@@ -15,10 +15,33 @@ import java.util.Set;
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long> {
 
-    @Query("SELECT p FROM Post p WHERE p.author.username = :username AND (:lastId IS NULL OR p.id < :lastId) ORDER BY p.id DESC")
+    @Query("""
+            SELECT p FROM Post p
+            WHERE p.author.username = :username
+              AND (p.hidden = false OR p.hidden IS NULL)
+              AND (p.author.isBanned = false OR (p.author.bannedUntil IS NOT NULL AND p.author.bannedUntil <= CURRENT_TIMESTAMP))
+              AND (:lastId IS NULL OR p.id < :lastId)
+            ORDER BY p.id DESC
+            """)
     List<Post> getProfilePosts(@Param("username") String username, @Param("lastId") Long lastId, Pageable pageable);
 
-    @Query("SELECT p FROM Post p WHERE p.author IN :authors AND (:lastId IS NULL OR p.id < :lastId) ORDER BY p.id DESC")
+    @Query("""
+            SELECT p FROM Post p
+            WHERE p.author.username = :username
+              AND (:lastId IS NULL OR p.id < :lastId)
+            ORDER BY p.id DESC
+            """)
+    List<Post> getProfilePostsForAdmin(@Param("username") String username, @Param("lastId") Long lastId,
+            Pageable pageable);
+
+    @Query("""
+            SELECT p FROM Post p
+            WHERE p.author IN :authors
+              AND (p.hidden = false OR p.hidden IS NULL)
+              AND (p.author.isBanned = false OR (p.author.bannedUntil IS NOT NULL AND p.author.bannedUntil <= CURRENT_TIMESTAMP))
+              AND (:lastId IS NULL OR p.id < :lastId)
+            ORDER BY p.id DESC
+            """)
     List<Post> getFeedPosts(@Param("authors") Set<User> authors, @Param("lastId") Long lastId, Pageable pageable);
 
     List<Post> findAllByOrderByCreatedAtDesc();

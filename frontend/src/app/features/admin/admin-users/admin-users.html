@@ -20,9 +20,9 @@
             </thead>
             <tbody>
                 <tr *ngFor="let user of users">
-                    <td class="id-cell">#{{ user.id }}</td>
+                    <td class="id-cell" data-label="ID">#{{ user.id }}</td>
 
-                    <td>
+                    <td data-label="User">
                         <div class="user-cell">
                             <div class="mini-avatar">
                                 <img *ngIf="user.profilePictureUrl"
@@ -33,21 +33,25 @@
                         </div>
                     </td>
 
-                    <td class="email-cell">{{ user.email }}</td>
+                    <td class="email-cell" data-label="Email">{{ user.email }}</td>
 
-                    <td>
+                    <td data-label="Role">
                         <span class="role-badge" [ngClass]="isAdmin(user) ? 'admin' : 'user'">
                             {{ getRoleName(user) }}
                         </span>
                     </td>
 
-                    <td>
+                    <td data-label="Status">
                         <span class="status-badge" [ngClass]="checkIsBanned(user) ? 'banned' : 'active'">
                             {{ checkIsBanned(user) ? 'Banned' : 'Active' }}
                         </span>
+                        <div *ngIf="checkIsBanned(user)" class="ban-meta">
+                            <span>{{ user.bannedUntil ? ('Until ' + (user.bannedUntil | timeDisplay:'dateTime')) : 'Permanent' }}</span>
+                            <span *ngIf="user.banReason">{{ user.banReason }}</span>
+                        </div>
                     </td>
 
-                    <td class="actions-cell">
+                    <td class="actions-cell" data-label="Actions">
                         <a [routerLink]="['/user', user.username]" class="audit-link">Audit</a>
 
                         <button *ngIf="!isAdmin(user)" class="ban-btn" [class.is-banned]="checkIsBanned(user)"
@@ -62,5 +66,29 @@
                 </tr>
             </tbody>
         </table>
+    </div>
+</div>
+
+<div class="modal-overlay" *ngIf="selectedBanUser" (click)="closeBanModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h3>Ban @{{ selectedBanUser.username }}</h3>
+        </div>
+
+        <div class="modal-body">
+            <label class="field-label" for="ban-duration">Duration</label>
+            <select id="ban-duration" class="modal-input" [(ngModel)]="banDuration">
+                <option *ngFor="let option of banDurations" [value]="option.value">{{ option.label }}</option>
+            </select>
+
+            <label class="field-label" for="ban-reason">Reason shown to user</label>
+            <textarea id="ban-reason" class="modal-input" rows="4" [(ngModel)]="banReason"
+                placeholder="Explain why this account is restricted."></textarea>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn-cancel" (click)="closeBanModal()">Cancel</button>
+            <button class="btn-confirm" [disabled]="!banReason.trim()" (click)="submitBan()">Apply Ban</button>
+        </div>
     </div>
 </div>

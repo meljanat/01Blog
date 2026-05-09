@@ -1,13 +1,15 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { AdminService } from '../../../core/services/admin.service';
 import { ConfirmationService } from '../../../core/services/confirmation.service';
+import { TimeDisplayPipe } from '../../../core/pipes/time-display.pipe';
 
 @Component({
   selector: 'app-admin-users',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FormsModule, TimeDisplayPipe],
   templateUrl: './admin-users.html',
   styleUrls: ['./admin-users.scss']
 })
@@ -17,6 +19,15 @@ export class AdminUsersComponent implements OnInit {
 
   users: any[] = [];
   isLoading: boolean = true;
+  selectedBanUser: any | null = null;
+  banReason = '';
+  banDuration = 'ONE_DAY';
+  banDurations = [
+    { value: 'ONE_DAY', label: '1 day' },
+    { value: 'THREE_DAYS', label: '3 days' },
+    { value: 'ONE_WEEK', label: '1 week' },
+    { value: 'PERMANENT', label: 'Permanent' }
+  ];
 
   ngOnInit() {
     this.loadUsers();
@@ -36,20 +47,47 @@ export class AdminUsersComponent implements OnInit {
   }
 
   toggleBan(user: any) {
-    const action = user.isBanned ? 'UNBAN' : 'BAN';
+    if (!user.isBanned) {
+      this.openBanModal(user);
+      return;
+    }
+
     this.confirmService.requireConfirmation({
-      title: `${action === 'BAN' ? 'Ban' : 'Unban'} User`,
-      message: `Are you sure you want to ${action.toLowerCase()} @${user.username}?`,
-      confirmText: 'Yes, do it',
-      isDanger: action === 'BAN',
+      title: 'Unban User',
+      message: `Restore access for @${user.username}?`,
+      confirmText: 'Unban User',
+      isDanger: false,
       action: () => {
-        this.adminService.toggleBanUser(user.id).subscribe({
-          next: () => {
-            if (user.isBanned !== undefined) { user.isBanned = !user.isBanned; }
-          },
-          error: (err) => console.error(`Failed to ${action} user`, err)
+        this.adminService.unbanUser(user.id).subscribe({
+          next: (updatedUser) => Object.assign(user, updatedUser),
+          error: (err) => console.error('Failed to unban user', err)
         });
       }
+    });
+  }
+
+  openBanModal(user: any) {
+    this.selectedBanUser = user;
+    this.banReason = '';
+    this.banDuration = 'ONE_DAY';
+  }
+
+  closeBanModal() {
+    this.selectedBanUser = null;
+    this.banReason = '';
+    this.banDuration = 'ONE_DAY';
+  }
+
+  submitBan() {
+    if (!this.selectedBanUser || !this.banReason.trim()) return;
+
+    const user = this.selectedBanUser;
+    this.adminService.banUser(user.id, this.banReason, this.banDuration).subscribe({
+      next: (updatedUser) => {
+        Object.assign(user, updatedUser);
+        this.closeBanModal();
+      },
+      error: (err) => console.error('Failed to ban user', err)
     });
   }
 

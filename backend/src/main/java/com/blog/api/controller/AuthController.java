@@ -24,6 +24,7 @@ import com.blog.api.model.User;
 import com.blog.api.repository.UserRepository;
 import com.blog.api.security.JwtUtils;
 import com.blog.api.service.FileStorageService;
+import com.blog.api.service.ModerationService;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -34,14 +35,17 @@ public class AuthController {
     private final PasswordEncoder encoder;
     private final JwtUtils jwtUtils;
     private final FileStorageService fileStorageService;
+    private final ModerationService moderationService;
 
     public AuthController(AuthenticationManager authenticationManager, UserRepository userRepository,
-            PasswordEncoder encoder, JwtUtils jwtUtils, FileStorageService fileStorageService) {
+            PasswordEncoder encoder, JwtUtils jwtUtils, FileStorageService fileStorageService,
+            ModerationService moderationService) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.encoder = encoder;
         this.jwtUtils = jwtUtils;
         this.fileStorageService = fileStorageService;
+        this.moderationService = moderationService;
     }
 
     @PostMapping("/register")
@@ -96,17 +100,20 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@RequestBody Map<String, String> loginRequest) {
         try {
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(loginRequest.get("username"),
-                            loginRequest.get("password")));
+            String username = loginRequest.get("username");
+            userRepository.findByUsername(username).ifPresent(user -> {
+                moderationService.refreshBanStatus(user);
+            });
 
-            User user = userRepository.findByUsername(loginRequest.get("username"))
-                    .orElseThrow(() -> new RuntimeException("User not found"));
-
-            if (user.getIsBanned()) {
+            User loginUser = userRepository.findByUsername(username).orElse(null);
+            if (loginUser != null && moderationService.hasActiveBan(loginUser)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body("Your account has been banned by an administrator.");
+                        .body(moderationService.buildBanMessage(loginUser));
             }
+
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(username,
+                            loginRequest.get("password")));
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
             String jwt = jwtUtils.generateJwtToken(authentication);

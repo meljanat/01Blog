@@ -4,6 +4,8 @@
     border: 1px solid #333;
     padding: 2rem;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    width: 100%;
+    min-width: 0;
 }
 
 .panel-header {
@@ -19,6 +21,7 @@
 .subtitle {
     margin: 0;
     color: #a3a3a3;
+    line-height: 1.5;
 }
 
 .loading-state,
@@ -30,10 +33,13 @@
 
 .table-container {
     overflow-x: auto;
+    border: 1px solid #27272a;
+    border-radius: 10px;
 }
 
 .admin-table {
     width: 100%;
+    min-width: 900px;
     border-collapse: collapse;
     text-align: left;
 }
@@ -53,6 +59,7 @@
     color: #f3f4f6;
     border-bottom: 1px solid #27272a;
     vertical-align: middle;
+    min-width: 0;
 }
 
 .admin-table tbody tr:hover {
@@ -78,6 +85,7 @@
     color: #d4d4d8;
     font-style: italic;
     max-width: 250px;
+    overflow-wrap: anywhere;
 }
 
 .media-badge {
@@ -99,6 +107,51 @@
     border: 1px solid rgba(113, 113, 122, 0.2);
 }
 
+.visibility-badge {
+    padding: 0.25rem 0.55rem;
+    border-radius: 5px;
+    font-size: 0.75rem;
+    font-weight: 800;
+}
+
+.visibility-badge.visible {
+    background: rgba(34, 197, 94, 0.08);
+    color: #86efac;
+    border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.visibility-badge.hidden {
+    background: rgba(245, 158, 11, 0.1);
+    color: #fbbf24;
+    border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.hide-btn {
+    background: transparent;
+    color: #fbbf24;
+    border: 1px solid rgba(245, 158, 11, 0.5);
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.hide-btn:hover {
+    background: rgba(245, 158, 11, 0.1);
+}
+
+.hide-btn.is-hidden {
+    color: #d4d4d8;
+    border-color: #52525b;
+}
+
+.hide-btn.is-hidden:hover {
+    background: #27272a;
+}
+
 .force-delete-btn {
     background: transparent;
     color: #ef4444;
@@ -109,6 +162,7 @@
     font-size: 0.85rem;
     cursor: pointer;
     transition: all 0.2s;
+    white-space: nowrap;
 }
 
 .force-delete-btn:hover {
@@ -119,7 +173,8 @@
 .actions-cell {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.6rem;
+    flex-wrap: wrap;
 }
 
 .view-link {
@@ -137,7 +192,8 @@
 
 @media (max-width: 620px) {
     .dashboard-panel {
-        padding: 1rem;
+        padding: 0.85rem;
+        border-radius: 8px;
     }
 
     .panel-header {
@@ -145,10 +201,101 @@
     }
 
     .panel-header h2 {
-        font-size: 1.35rem;
+        font-size: 1.25rem;
     }
 
     .actions-cell {
         gap: 0.5rem;
+    }
+
+    .loading-state,
+    .empty-state {
+        padding: 2rem 1rem;
+    }
+}
+
+@media (max-width: 860px) {
+    .table-container {
+        overflow: visible;
+        border: 0;
+        border-radius: 0;
+    }
+
+    .admin-table,
+    .admin-table tbody,
+    .admin-table tr,
+    .admin-table td {
+        display: block;
+        width: 100%;
+        min-width: 0;
+    }
+
+    .admin-table thead {
+        display: none;
+    }
+
+    .admin-table tr {
+        border: 1px solid #333;
+        border-radius: 10px;
+        padding: 0.8rem;
+        margin-bottom: 0.85rem;
+        background: #18181b;
+    }
+
+    .admin-table td {
+        border-bottom: 0;
+        padding: 0.55rem 0;
+        display: grid;
+        grid-template-columns: minmax(82px, 30%) minmax(0, 1fr);
+        gap: 0.75rem;
+        align-items: center;
+    }
+
+    .admin-table td::before {
+        content: attr(data-label);
+        color: #71717a;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .actions-cell {
+        flex-wrap: wrap;
+        align-items: stretch;
+    }
+
+    .actions-cell .view-link,
+    .actions-cell .hide-btn,
+    .actions-cell .force-delete-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 34px;
+    }
+}
+
+@media (max-width: 520px) {
+    .admin-table tr {
+        padding: 0.75rem;
+    }
+
+    .admin-table td {
+        grid-template-columns: 1fr;
+        gap: 0.35rem;
+        padding: 0.55rem 0;
+    }
+
+    .admin-table td::before {
+        font-size: 0.7rem;
+    }
+
+    .content-cell {
+        max-width: none;
+    }
+
+    .actions-cell .view-link,
+    .actions-cell .hide-btn,
+    .actions-cell .force-delete-btn {
+        width: 100%;
     }
 }

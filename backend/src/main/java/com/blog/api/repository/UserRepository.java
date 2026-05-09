@@ -20,7 +20,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
   @Query("""
       SELECT u FROM User u
       WHERE u.username <> :currentUsername
-        AND u.isBanned = false
+        AND (u.isBanned = false OR (u.bannedUntil IS NOT NULL AND u.bannedUntil <= CURRENT_TIMESTAMP))
         AND u NOT IN (
           SELECT f FROM User me JOIN me.following f
           WHERE me.username = :currentUsername

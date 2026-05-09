@@ -2,6 +2,7 @@ package com.blog.api.controller;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -45,7 +47,7 @@ public class AdminController {
 
     @GetMapping("/users")
     public ResponseEntity<List<User>> getAllUsers() {
-        return ResponseEntity.ok(userRepository.findAll());
+        return ResponseEntity.ok(moderationService.refreshBanStatuses(userRepository.findAll()));
     }
 
     @GetMapping("/posts")
@@ -70,7 +72,8 @@ public class AdminController {
     }
 
     @PutMapping("/users/{id}/ban")
-    public ResponseEntity<?> toggleUserBan(@PathVariable Long id, Principal principal) {
+    public ResponseEntity<?> banUser(@PathVariable Long id, @RequestBody Map<String, String> banRequest,
+            Principal principal) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -82,11 +85,22 @@ public class AdminController {
             return ResponseEntity.badRequest().body("Admin accounts cannot be banned.");
         }
 
-        user.setIsBanned(!user.getIsBanned());
-        userRepository.save(user);
+        String reason = banRequest == null ? null : banRequest.get("reason");
+        String duration = banRequest == null ? null : banRequest.get("duration");
 
-        String message = user.getIsBanned() ? "User has been successfully banned." : "User has been unbanned.";
-        return ResponseEntity.ok(message);
+        return ResponseEntity.ok(moderationService.banUser(user, reason, duration));
+    }
+
+    @PutMapping("/users/{id}/unban")
+    public ResponseEntity<?> unbanUser(@PathVariable Long id, Principal principal) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (user.getUsername().equals(principal.getName())) {
+            return ResponseEntity.badRequest().body("You cannot unban your own account.");
+        }
+
+        return ResponseEntity.ok(moderationService.unbanUser(user));
     }
 
     @DeleteMapping("/users/{id}")
@@ -113,6 +127,15 @@ public class AdminController {
 
         moderationService.deletePost(post);
         return ResponseEntity.ok("Post deleted by Admin.");
+    }
+
+    @PutMapping("/posts/{id}/visibility")
+    public ResponseEntity<Post> setPostVisibility(@PathVariable Long id, @RequestBody Map<String, Boolean> request) {
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Post not found"));
+        boolean hidden = request != null && Boolean.TRUE.equals(request.get("hidden"));
+
+        return ResponseEntity.ok(moderationService.setPostHidden(post, hidden));
     }
 
     @DeleteMapping("/comments/{id}")

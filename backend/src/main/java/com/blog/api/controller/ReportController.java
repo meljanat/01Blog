@@ -14,6 +14,7 @@ import com.blog.api.model.ReportType;
 import com.blog.api.model.User;
 import com.blog.api.repository.ReportRepository;
 import com.blog.api.repository.UserRepository;
+import com.blog.api.service.ModerationService;
 import com.blog.api.repository.PostRepository;
 
 @RestController
@@ -23,12 +24,14 @@ public class ReportController {
     private final ReportRepository reportRepository;
     private final UserRepository userRepository;
     private final PostRepository postRepository;
+    private final ModerationService moderationService;
 
     public ReportController(ReportRepository reportRepository, UserRepository userRepository,
-            PostRepository postRepository) {
+            PostRepository postRepository, ModerationService moderationService) {
         this.reportRepository = reportRepository;
         this.userRepository = userRepository;
         this.postRepository = postRepository;
+        this.moderationService = moderationService;
     }
 
     @PostMapping
@@ -52,11 +55,20 @@ public class ReportController {
 
             User reportedUser = null;
             switch (targetTypeStr) {
-                case "USER" -> reportedUser = userRepository.findById(targetId)
-                        .orElseThrow(() -> new RuntimeException("Target user not found"));
+                case "USER" -> {
+                    reportedUser = userRepository.findById(targetId)
+                            .orElseThrow(() -> new RuntimeException("Target user not found"));
+                    reportedUser = moderationService.refreshBanStatus(reportedUser);
+                    if (moderationService.hasActiveBan(reportedUser)) {
+                        return ResponseEntity.badRequest().body("This profile is already banned.");
+                    }
+                }
                 case "POST" -> {
                     var post = postRepository.findById(targetId)
                             .orElseThrow(() -> new RuntimeException("Target post not found"));
+                    if (Boolean.TRUE.equals(post.getHidden())) {
+                        return ResponseEntity.badRequest().body("This post is already hidden.");
+                    }
                     reportedUser = post.getAuthor();
                 }
                 default -> throw new RuntimeException("Unknown target type");

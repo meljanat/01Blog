@@ -10,7 +10,20 @@ export interface UserProfile {
   followersCount: number;
   followingCount: number;
   isBanned: boolean;
+  banReason?: string;
+  bannedUntil?: string | null;
+  banTimeLeft?: string | null;
   isFollowing: boolean;
+}
+
+export interface UserRelationship {
+  id: number;
+  username: string;
+  bio?: string;
+  profilePictureUrl?: string;
+  isBanned: boolean;
+  isFollowing: boolean;
+  isSelf: boolean;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -28,6 +41,14 @@ export class UserService {
 
   unfollowUser(username: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/${encodeURIComponent(username)}/unfollow`, {}, { responseType: 'text' });
+  }
+
+  getFollowers(username: string): Observable<UserRelationship[]> {
+    return this.http.get<UserRelationship[]>(`${this.apiUrl}/${encodeURIComponent(username)}/followers`);
+  }
+
+  getFollowing(username: string): Observable<UserRelationship[]> {
+    return this.http.get<UserRelationship[]>(`${this.apiUrl}/${encodeURIComponent(username)}/following`);
   }
 
   updateProfile(bio: string, file: File | null): Observable<any> {

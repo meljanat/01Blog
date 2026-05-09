@@ -50,6 +50,9 @@ public class Post {
 
     private String mediaType;
 
+    @Builder.Default
+    private Boolean hidden = false;
+
     // Hibernate will automatically set this to the current time when saved
     @CreationTimestamp
     @Column(updatable = false)
@@ -76,5 +79,9 @@ public class Post {
 
     public void setLikes(Set<User> likes) {
         this.likes = likes;
+    }
+
+    public int getCommentsCount() {
+        return comments == null ? 0 : comments.size();
     }
 }

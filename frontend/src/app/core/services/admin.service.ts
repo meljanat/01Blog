@@ -23,8 +23,12 @@ export class AdminService {
     return this.http.put(`${this.apiUrl}/reports/${reportId}/resolve`, {}, { responseType: 'text' });
   }
 
-  toggleBanUser(userId: number): Observable<any> {
-    return this.http.put(`${this.apiUrl}/users/${userId}/ban`, {}, { responseType: 'text' });
+  banUser(userId: number, reason: string, duration: string): Observable<any> {
+    return this.http.put(`${this.apiUrl}/users/${userId}/ban`, { reason, duration });
+  }
+
+  unbanUser(userId: number): Observable<any> {
+    return this.http.put(`${this.apiUrl}/users/${userId}/unban`, {});
   }
 
   deleteUser(userId: number): Observable<any> {
@@ -33,6 +37,10 @@ export class AdminService {
 
   deletePost(postId: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/posts/${postId}`, { responseType: 'text' });
+  }
+
+  setPostHidden(postId: number, hidden: boolean): Observable<any> {
+    return this.http.put(`${this.apiUrl}/posts/${postId}/visibility`, { hidden });
   }
 
   deleteComment(commentId: number): Observable<any> {

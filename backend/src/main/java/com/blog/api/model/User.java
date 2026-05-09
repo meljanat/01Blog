@@ -1,5 +1,6 @@
 package com.blog.api.model;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -35,6 +36,11 @@ public class User {
     @Builder.Default
     private Boolean isBanned = false;
 
+    @Column(length = 1000)
+    private String banReason;
+
+    private LocalDateTime bannedUntil;
+
     @Column(length = 500)
     private String bio;
 
@@ -59,5 +65,15 @@ public class User {
     public void unfollow(User userToUnfollow) {
         this.following.remove(userToUnfollow);
         userToUnfollow.getFollowers().remove(this);
+    }
+
+    public boolean hasActiveBan() {
+        return Boolean.TRUE.equals(isBanned) && (bannedUntil == null || bannedUntil.isAfter(LocalDateTime.now()));
+    }
+
+    public void clearBan() {
+        this.isBanned = false;
+        this.banReason = null;
+        this.bannedUntil = null;
     }
 }

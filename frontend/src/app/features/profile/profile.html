@@ -10,11 +10,18 @@
 
         <div class="profile-info">
             <h2>{{ userProfile.username }}</h2>
+            <div *ngIf="userProfile.isBanned" class="banned-profile-badge">
+                Banned account
+            </div>
             <p class="bio">{{ userProfile.bio || 'This user has no bio yet.' }}</p>
 
             <div class="profile-stats">
-                <span class="stat"><strong>{{ userProfile.followersCount }}</strong> Followers</span>
-                <span class="stat"><strong>{{ userProfile.followingCount }}</strong> Following</span>
+                <button class="stat" [disabled]="isProfileBannedForViewer()" (click)="openRelationships('followers')">
+                    <strong>{{ userProfile.followersCount }}</strong> Followers
+                </button>
+                <button class="stat" [disabled]="isProfileBannedForViewer()" (click)="openRelationships('following')">
+                    <strong>{{ userProfile.followingCount }}</strong> Following
+                </button>
             </div>
         </div>
 
@@ -23,7 +30,7 @@
                 Edit Profile
             </button>
 
-            <ng-container *ngIf="currentUser !== userProfile.username">
+            <ng-container *ngIf="currentUser !== userProfile.username && !isProfileBannedForViewer()">
                 <button class="btn-follow" [ngClass]="{'following': userProfile.isFollowing}" (click)="toggleFollow()">
                     {{ userProfile.isFollowing ? 'Unfollow' : 'Follow' }}
                 </button>
@@ -32,6 +39,16 @@
                 </button>
             </ng-container>
         </div>
+    </div>
+
+    <div *ngIf="userProfile.isBanned" class="banned-profile-panel">
+        <strong>This profile is currently restricted.</strong>
+        <span *ngIf="userProfile.banReason">Reason: {{ userProfile.banReason }}</span>
+        <span *ngIf="userProfile.bannedUntil">
+            Ends {{ userProfile.bannedUntil | timeDisplay:'dateTime' }}
+            <ng-container *ngIf="userProfile.banTimeLeft">({{ userProfile.banTimeLeft }} left)</ng-container>
+        </span>
+        <span *ngIf="!userProfile.bannedUntil">This ban is permanent.</span>
     </div>
 
     <div class="admin-controls-wrapper" *ngIf="isAdmin() && currentUser !== userProfile.username">
@@ -63,11 +80,15 @@
     <div class="profile-feed">
         <h3 class="feed-title">{{ userProfile.username }}'s Posts</h3>
 
-        <div *ngIf="!isLoadingMore && posts.length === 0" class="empty-state">
+        <div *ngIf="isProfileBannedForViewer()" class="empty-state">
+            <p>Posts are unavailable while this account is banned.</p>
+        </div>
+
+        <div *ngIf="!isProfileBannedForViewer() && !isLoadingMore && posts.length === 0" class="empty-state">
             <p>No posts to show.</p>
         </div>
 
-        <div class="posts-list" *ngIf="posts.length > 0">
+        <div class="posts-list" *ngIf="!isProfileBannedForViewer() && posts.length > 0">
             <app-post-card *ngFor="let post of posts" [post]="post" [currentUser]="currentUser"
                 (postDeleted)="onPostDeleted($event)">
             </app-post-card>
@@ -120,6 +141,66 @@
             <button class="btn-cancel" (click)="closeEditModal()" [disabled]="isSaving">Cancel</button>
             <button class="btn-confirm" (click)="saveProfile()" [disabled]="isSaving">
                 {{ isSaving ? 'Saving...' : 'Save Changes' }}
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" *ngIf="relationshipModal" (click)="closeRelationships()">
+    <div class="modal-card relationship-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h3>{{ relationshipTitle() }}</h3>
+        </div>
+
+        <div class="modal-body relationship-list">
+            <div *ngIf="isLoadingRelationships" class="relationship-state">Loading...</div>
+            <div *ngIf="!isLoadingRelationships && relationshipUsers.length === 0" class="relationship-state">
+                Nothing to show.
+            </div>
+
+            <a *ngFor="let user of relationshipUsers" class="relationship-item" [routerLink]="['/user', user.username]"
+                (click)="closeRelationships()">
+                <div class="relationship-avatar">
+                    <img *ngIf="user.profilePictureUrl" [src]="'http://localhost:8080/uploads/' + user.profilePictureUrl"
+                        alt="Avatar">
+                    <span *ngIf="!user.profilePictureUrl">{{ user.username.charAt(0) | uppercase }}</span>
+                </div>
+
+                <div class="relationship-info">
+                    <strong>@{{ user.username }}</strong>
+                    <span>{{ user.isBanned ? 'Banned account' : (user.bio || 'No bio yet.') }}</span>
+                </div>
+
+                <button *ngIf="!user.isSelf" class="relationship-follow-btn" [class.following]="user.isFollowing"
+                    [disabled]="user.isBanned" (click)="toggleRelationshipFollow($event, user)">
+                    {{ user.isFollowing ? 'Unfollow' : 'Follow' }}
+                </button>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showBanModal" (click)="closeBanModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h3>Ban @{{ userProfile?.username }}</h3>
+        </div>
+
+        <div class="modal-body custom-form">
+            <label class="fw-bold text-light mb-2 d-block">Duration</label>
+            <select class="form-control bg-dark text-light border-secondary mb-3" [(ngModel)]="banDuration">
+                <option *ngFor="let option of banDurations" [value]="option.value">{{ option.label }}</option>
+            </select>
+
+            <label class="fw-bold text-light mb-2 d-block">Reason shown to user</label>
+            <textarea [(ngModel)]="banReason" rows="4" class="form-control bg-dark text-light border-secondary"
+                placeholder="Explain why this account is restricted."></textarea>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn-cancel" (click)="closeBanModal()">Cancel</button>
+            <button class="btn-confirm" (click)="submitBanAsAdmin()" [disabled]="!banReason.trim()">
+                Apply Ban
             </button>
         </div>
     </div>

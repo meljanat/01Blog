@@ -1,7 +1,7 @@
 import { Component, HostListener, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { UserService, UserProfile } from '../../core/services/user.service';
+import { UserRelationship, UserService, UserProfile } from '../../core/services/user.service';
 import { PostService } from '../../core/services/post.service';
 import { Post } from '../../core/models/post.model';
 import { ReportModalComponent } from '../../core/components/report-modal/report-modal.component';
@@ -10,11 +10,12 @@ import { AdminService } from '../../core/services/admin.service';
 import { ConfirmationService } from '../../core/services/confirmation.service';
 import { FormsModule } from '@angular/forms';
 import { distinctUntilChanged, map } from 'rxjs';
+import { TimeDisplayPipe } from '../../core/pipes/time-display.pipe';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, RouterModule, PostCardComponent, ReportModalComponent, FormsModule],
+  imports: [CommonModule, RouterModule, PostCardComponent, ReportModalComponent, FormsModule, TimeDisplayPipe],
   templateUrl: './profile.html',
   styleUrls: ['./profile.scss']
 })
@@ -47,6 +48,18 @@ export class ProfileComponent implements OnInit {
   selectedAvatar: File | null = null;
   avatarPreview: string | null = null;
   isSaving: boolean = false;
+  relationshipModal: 'followers' | 'following' | null = null;
+  relationshipUsers: UserRelationship[] = [];
+  isLoadingRelationships = false;
+  banReason = '';
+  banDuration = 'ONE_DAY';
+  showBanModal = false;
+  banDurations = [
+    { value: 'ONE_DAY', label: '1 day' },
+    { value: 'THREE_DAYS', label: '3 days' },
+    { value: 'ONE_WEEK', label: '1 week' },
+    { value: 'PERMANENT', label: 'Permanent' }
+  ];
 
   openReportModal() { this.showReportModal = true; }
   closeReportModal() { this.showReportModal = false; }
@@ -64,7 +77,6 @@ export class ProfileComponent implements OnInit {
     if (!username) return;
 
     this.loadUserProfile(this.activeProfileLoadId, username);
-    this.loadUserPosts(this.activeProfileLoadId, username);
   }
 
   loadUserProfile(loadId = this.activeProfileLoadId, username = this.username) {
@@ -72,6 +84,12 @@ export class ProfileComponent implements OnInit {
       next: (profile) => {
         if (loadId !== this.activeProfileLoadId) return;
         this.userProfile = profile;
+        if (this.canViewProfilePosts()) {
+          this.loadUserPosts(loadId, username);
+        } else {
+          this.hasMorePosts = false;
+          this.isLoadingMore = false;
+        }
       },
       error: (err) => {
         if (loadId !== this.activeProfileLoadId) return;
@@ -131,6 +149,7 @@ export class ProfileComponent implements OnInit {
   }
 
   loadUserPosts(loadId = this.activeProfileLoadId, username = this.username) {
+    if (!this.canViewProfilePosts()) return;
     if (this.isLoadingMore || !this.hasMorePosts) return;
     this.isLoadingMore = true;
 
@@ -155,7 +174,7 @@ export class ProfileComponent implements OnInit {
   }
 
   toggleFollow() {
-    if (!this.userProfile) return;
+    if (!this.userProfile || this.isProfileBannedForViewer()) return;
 
     if (this.userProfile.isFollowing) {
       this.userProfile.isFollowing = false;
@@ -208,24 +227,114 @@ export class ProfileComponent implements OnInit {
     if (!this.userProfile) return;
 
     const isCurrentlyBanned = this.userProfile.isBanned !== undefined ? this.userProfile.isBanned : false;
-    const action = isCurrentlyBanned ? 'UNBAN' : 'BAN';
+    if (!isCurrentlyBanned) {
+      this.openBanModal();
+      return;
+    }
 
     this.confirmationService.requireConfirmation({
-      title: `${action === 'BAN' ? 'Ban' : 'Unban'} User`,
-      message: `Are you sure you want to ${action.toLowerCase()} @${this.userProfile.username}? They will ${action === 'BAN' ? 'lose' : 'regain'} access to their account.`,
-      confirmText: `Yes, ${action}`,
-      isDanger: action === 'BAN',
+      title: 'Unban User',
+      message: `Restore access for @${this.userProfile.username}?`,
+      confirmText: 'Unban User',
+      isDanger: false,
       action: () => {
-        this.adminService.toggleBanUser(this.userProfile!.id).subscribe({
-          next: () => {
-            if (this.userProfile?.isBanned !== undefined) {
-              this.userProfile.isBanned = !this.userProfile.isBanned;
-            }
+        this.adminService.unbanUser(this.userProfile!.id).subscribe({
+          next: (updatedUser) => {
+            Object.assign(this.userProfile!, updatedUser);
+            this.posts = [];
+            this.hasMorePosts = true;
+            this.loadUserPosts();
           },
-          error: (err) => console.error('Failed to toggle ban', err)
+          error: (err) => console.error('Failed to unban user', err)
         });
       }
     });
+  }
+
+  openBanModal() {
+    this.banReason = '';
+    this.banDuration = 'ONE_DAY';
+    this.showBanModal = true;
+  }
+
+  closeBanModal() {
+    this.showBanModal = false;
+    this.banReason = '';
+    this.banDuration = 'ONE_DAY';
+  }
+
+  submitBanAsAdmin() {
+    if (!this.userProfile || !this.banReason.trim()) return;
+
+    this.adminService.banUser(this.userProfile.id, this.banReason, this.banDuration).subscribe({
+      next: (updatedUser) => {
+        Object.assign(this.userProfile!, updatedUser);
+        this.closeBanModal();
+      },
+      error: (err) => console.error('Failed to ban user', err)
+    });
+  }
+
+  openRelationships(type: 'followers' | 'following') {
+    if (!this.userProfile || this.isProfileBannedForViewer()) return;
+
+    this.relationshipModal = type;
+    this.relationshipUsers = [];
+    this.isLoadingRelationships = true;
+
+    const request = type === 'followers'
+      ? this.userService.getFollowers(this.userProfile.username)
+      : this.userService.getFollowing(this.userProfile.username);
+
+    request.subscribe({
+      next: (users) => {
+        this.relationshipUsers = users;
+        this.isLoadingRelationships = false;
+      },
+      error: (err) => {
+        console.error('Failed to load relationships', err);
+        this.isLoadingRelationships = false;
+      }
+    });
+  }
+
+  closeRelationships() {
+    this.relationshipModal = null;
+    this.relationshipUsers = [];
+    this.isLoadingRelationships = false;
+  }
+
+  toggleRelationshipFollow(event: Event, user: UserRelationship) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (user.isSelf || user.isBanned) return;
+
+    const previousState = user.isFollowing;
+    user.isFollowing = !user.isFollowing;
+
+    const request = previousState
+      ? this.userService.unfollowUser(user.username)
+      : this.userService.followUser(user.username);
+
+    request.subscribe({
+      error: (err) => {
+        console.error('Failed to update relationship', err);
+        user.isFollowing = previousState;
+      }
+    });
+  }
+
+  relationshipTitle(): string {
+    return this.relationshipModal === 'followers' ? 'Followers' : 'Following';
+  }
+
+  isProfileBannedForViewer(): boolean {
+    return Boolean(this.userProfile?.isBanned) && !this.isAdmin();
+  }
+
+  canViewProfilePosts(): boolean {
+    return Boolean(this.userProfile) && (!this.userProfile!.isBanned || this.isAdmin());
   }
 
   deleteUserAsAdmin() {

@@ -29,6 +29,10 @@ export class PostCardComponent {
 
   isEditing: boolean = false;
   editPostText: string = '';
+  editSelectedFile: File | null = null;
+  editSelectedFilePreview: string | null = null;
+  editSelectedFileType: string = '';
+  removeExistingMedia: boolean = false;
 
   comments: any[] = [];
   isLoadingComments = false;
@@ -122,26 +126,88 @@ export class PostCardComponent {
     });
   }
 
+  toggleHidden() {
+    const nextHiddenState = !this.post.hidden;
+    this.adminService.setPostHidden(this.post.id, nextHiddenState).subscribe({
+      next: (updatedPost) => {
+        this.post.hidden = Boolean(updatedPost.hidden);
+        if (this.post.hidden && !this.isDetailView) {
+          this.postDeleted.emit(this.post.id);
+        }
+      },
+      error: (err) => console.error('Failed to update post visibility', err)
+    });
+  }
+
   startEditing() {
     this.isEditing = true;
     this.editPostText = this.post.text;
+    this.clearEditSelectedFile();
+    this.removeExistingMedia = false;
   }
 
   cancelEdit() {
     this.isEditing = false;
     this.editPostText = '';
+    this.clearEditSelectedFile();
+    this.removeExistingMedia = false;
+  }
+
+  onEditMediaSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] || null;
+    if (!file) return;
+
+    this.clearEditSelectedFile();
+    this.editSelectedFile = file;
+    this.editSelectedFileType = file.type;
+    this.editSelectedFilePreview = URL.createObjectURL(file);
+    this.removeExistingMedia = false;
+  }
+
+  clearEditSelectedFile() {
+    if (this.editSelectedFilePreview) {
+      URL.revokeObjectURL(this.editSelectedFilePreview);
+    }
+    this.editSelectedFile = null;
+    this.editSelectedFilePreview = null;
+    this.editSelectedFileType = '';
+  }
+
+  markRemoveExistingMedia() {
+    this.clearEditSelectedFile();
+    this.removeExistingMedia = true;
+  }
+
+  isEditSelectedFileVideo(): boolean {
+    return this.editSelectedFileType.startsWith('video/');
+  }
+
+  hasEditChanges(): boolean {
+    return this.editPostText.trim() !== this.post.text
+      || Boolean(this.editSelectedFile)
+      || this.removeExistingMedia;
   }
 
   saveEdit() {
-    if (!this.editPostText.trim() || this.editPostText === this.post.text) {
+    if (!this.editPostText.trim() || !this.hasEditChanges()) {
       this.cancelEdit();
       return;
     }
 
-    this.postService.updatePost(this.post.id, this.editPostText).subscribe({
+    const formData = new FormData();
+    formData.append('text', this.editPostText.trim());
+    formData.append('removeMedia', String(this.removeExistingMedia));
+    if (this.editSelectedFile) {
+      formData.append('file', this.editSelectedFile);
+    }
+
+    this.postService.updatePost(this.post.id, formData).subscribe({
       next: (updatedPost) => {
         this.post.text = updatedPost.text;
-        this.isEditing = false;
+        this.post.mediaUrl = updatedPost.mediaUrl;
+        this.post.mediaType = updatedPost.mediaType;
+        this.cancelEdit();
       },
       error: (err) => console.error('Failed to update post', err)
     });
@@ -185,6 +251,7 @@ export class PostCardComponent {
       next: (newComment) => {
         if (!this.comments) this.comments = [];
         this.comments.unshift(newComment);
+        this.post.commentsCount++;
 
         this.newCommentText = '';
       },
@@ -206,6 +273,7 @@ export class PostCardComponent {
         deleteRequest.subscribe({
           next: () => {
             this.comments = this.comments.filter(c => c.id !== commentId);
+            this.post.commentsCount = Math.max(0, this.post.commentsCount - 1);
           },
           error: (err) => console.error('Failed to delete comment', err)
         });

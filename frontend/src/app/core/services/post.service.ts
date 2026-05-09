@@ -44,10 +44,8 @@ export class PostService {
     );
   }
 
-  updatePost(postId: number, newText: string): Observable<Post> {
-    return this.http.put<any>(`${this.apiUrl}/${postId}`, newText, {
-      headers: { 'Content-Type': 'text/plain' }
-    }).pipe(
+  updatePost(postId: number, formData: FormData): Observable<Post> {
+    return this.http.put<any>(`${this.apiUrl}/${postId}`, formData).pipe(
       map(item => new Post(item))
     );
   }

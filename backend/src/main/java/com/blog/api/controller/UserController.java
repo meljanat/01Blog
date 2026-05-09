@@ -2,9 +2,13 @@ package com.blog.api.controller;
 
 import java.io.IOException;
 import java.security.Principal;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.blog.api.model.NotificationType;
 import com.blog.api.service.FileStorageService;
+import com.blog.api.service.ModerationService;
 import com.blog.api.service.NotificationService;
 import com.blog.api.model.User;
 import com.blog.api.repository.UserRepository;
@@ -30,24 +35,28 @@ public class UserController {
     private final UserRepository userRepository;
     private final NotificationService notificationService;
     private final FileStorageService fileStorageService;
+    private final ModerationService moderationService;
 
     public UserController(UserRepository userRepository, NotificationService notificationService,
-            FileStorageService fileStorageService) {
+            FileStorageService fileStorageService, ModerationService moderationService) {
         this.userRepository = userRepository;
         this.notificationService = notificationService;
         this.fileStorageService = fileStorageService;
+        this.moderationService = moderationService;
     }
 
     @GetMapping("/{username}")
     public ResponseEntity<?> getUserProfile(@PathVariable String username, Principal principal) {
         User targetUser = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+        targetUser = moderationService.refreshBanStatus(targetUser);
 
         boolean isFollowing = false;
         if (principal != null) {
             User currentUser = userRepository.findByUsername(principal.getName()).orElse(null);
             if (currentUser != null) {
-                isFollowing = targetUser.getFollowers().contains(currentUser);
+                isFollowing = targetUser.getFollowers().stream()
+                        .anyMatch(follower -> follower.getId().equals(currentUser.getId()));
             }
         }
 
@@ -58,7 +67,10 @@ public class UserController {
         profileData.put("profilePictureUrl", targetUser.getProfilePictureUrl());
         profileData.put("followersCount", targetUser.getFollowers().size());
         profileData.put("followingCount", targetUser.getFollowing().size());
-        profileData.put("isBanned", targetUser.getIsBanned());
+        profileData.put("isBanned", moderationService.hasActiveBan(targetUser));
+        profileData.put("banReason", targetUser.getBanReason());
+        profileData.put("bannedUntil", targetUser.getBannedUntil());
+        profileData.put("banTimeLeft", targetUser.getBannedUntil() == null ? null : formatRemainingBanTime(targetUser));
         profileData.put("isFollowing", isFollowing);
 
         return ResponseEntity.ok(profileData);
@@ -114,6 +126,26 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/{username}/followers")
+    public ResponseEntity<List<Map<String, Object>>> getFollowers(@PathVariable String username, Principal principal) {
+        User targetUser = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        User currentUser = userRepository.findByUsername(principal.getName())
+                .orElseThrow(() -> new RuntimeException("Current user not found"));
+
+        return ResponseEntity.ok(buildRelationshipList(targetUser.getFollowers(), currentUser));
+    }
+
+    @GetMapping("/{username}/following")
+    public ResponseEntity<List<Map<String, Object>>> getFollowing(@PathVariable String username, Principal principal) {
+        User targetUser = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        User currentUser = userRepository.findByUsername(principal.getName())
+                .orElseThrow(() -> new RuntimeException("Current user not found"));
+
+        return ResponseEntity.ok(buildRelationshipList(targetUser.getFollowing(), currentUser));
+    }
+
     @PostMapping("/{username}/follow")
     public ResponseEntity<?> followUser(@PathVariable String username, Principal principal) {
         User targetUser = userRepository.findByUsername(username)
@@ -126,11 +158,14 @@ public class UserController {
             return ResponseEntity.badRequest().body("You cannot follow yourself.");
         }
 
-        if (Boolean.TRUE.equals(targetUser.getIsBanned())) {
+        targetUser = moderationService.refreshBanStatus(targetUser);
+
+        if (moderationService.hasActiveBan(targetUser)) {
             return ResponseEntity.badRequest().body("You cannot follow a banned profile.");
         }
 
-        if (currentUser.getFollowing().contains(targetUser)) {
+        Long targetUserId = targetUser.getId();
+        if (currentUser.getFollowing().stream().anyMatch(followed -> followed.getId().equals(targetUserId))) {
             return ResponseEntity.ok("Already following " + username);
         }
 
@@ -165,5 +200,54 @@ public class UserController {
                 currentUser.getId());
 
         return ResponseEntity.ok("Successfully unfollowed " + username);
+    }
+
+    private List<Map<String, Object>> buildRelationshipList(Set<User> users, User currentUser) {
+        return users.stream()
+                .sorted(Comparator.comparing(User::getUsername, String.CASE_INSENSITIVE_ORDER))
+                .map(user -> buildUserSummary(user, currentUser))
+                .toList();
+    }
+
+    private Map<String, Object> buildUserSummary(User user, User currentUser) {
+        User refreshedUser = moderationService.refreshBanStatus(user);
+        Map<String, Object> map = new HashMap<>();
+        map.put("id", refreshedUser.getId());
+        map.put("username", refreshedUser.getUsername());
+        map.put("profilePictureUrl", refreshedUser.getProfilePictureUrl());
+        map.put("bio", refreshedUser.getBio());
+        map.put("isBanned", moderationService.hasActiveBan(refreshedUser));
+        map.put("isFollowing", currentUser.getFollowing().stream()
+                .anyMatch(followedUser -> followedUser.getId().equals(refreshedUser.getId())));
+        map.put("isSelf", currentUser.getId().equals(refreshedUser.getId()));
+        return map;
+    }
+
+    private String formatRemainingBanTime(User user) {
+        LocalDateTime bannedUntil = user.getBannedUntil();
+        if (bannedUntil == null) {
+            return null;
+        }
+
+        Duration remaining = Duration.between(LocalDateTime.now(), bannedUntil);
+        if (remaining.isNegative() || remaining.isZero()) {
+            return "less than a minute";
+        }
+
+        long days = remaining.toDays();
+        long hours = remaining.minusDays(days).toHours();
+        long minutes = remaining.minusDays(days).minusHours(hours).toMinutes();
+
+        if (days > 0) {
+            return days + (days == 1 ? " day" : " days")
+                    + (hours > 0 ? " " + hours + (hours == 1 ? " hour" : " hours") : "");
+        }
+
+        if (hours > 0) {
+            return hours + (hours == 1 ? " hour" : " hours")
+                    + (minutes > 0 ? " " + minutes + (minutes == 1 ? " minute" : " minutes") : "");
+        }
+
+        return minutes + (minutes == 1 ? " minute" : " minutes");
     }
 }

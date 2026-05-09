@@ -29,19 +29,19 @@
             </thead>
             <tbody>
                 <tr *ngFor="let report of reports">
-                    <td class="id-cell">#{{ report.id }}</td>
-                    <td class="date-cell" [title]="report.createdAt | timeDisplay:'full'">
+                    <td class="id-cell" data-label="ID">#{{ report.id }}</td>
+                    <td class="date-cell" data-label="Date" [title]="report.createdAt | timeDisplay:'full'">
                         {{ report.createdAt | timeDisplay:'dateTime' }}
                     </td>
-                    <td><span class="reporter-name">@{{ report.reporter.username }}</span></td>
-                    <td>
+                    <td data-label="Reporter"><span class="reporter-name">@{{ report.reporter.username }}</span></td>
+                    <td data-label="Target">
                         <button class="target-btn badge" [ngClass]="report.targetType.toLowerCase()"
                             (click)="inspectReportTarget(report)" title="Click to inspect this content">
                             {{ report.targetType }} #{{ report.targetId }} 🔗
                         </button>
                     </td>
-                    <td class="reason-cell">{{ report.reason }}</td>
-                    <td>
+                    <td class="reason-cell" data-label="Reason">{{ report.reason }}</td>
+                    <td data-label="Action">
                         <button class="resolve-btn" (click)="resolveReport(report.id)">
                             Resolve
                         </button>
