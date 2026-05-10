@@ -91,9 +91,8 @@ export class ProfileComponent implements OnInit {
           this.isLoadingMore = false;
         }
       },
-      error: (err) => {
+      error: () => {
         if (loadId !== this.activeProfileLoadId) return;
-        console.error('Failed to load profile', err);
       }
     });
   }
@@ -130,8 +129,7 @@ export class ProfileComponent implements OnInit {
         this.isSaving = false;
         this.closeEditModal();
       },
-      error: (err) => {
-        console.error('Failed to update profile', err);
+      error: () => {
         this.isSaving = false;
       }
     });
@@ -165,9 +163,8 @@ export class ProfileComponent implements OnInit {
         this.hasMorePosts = newPosts.length === 10;
         this.isLoadingMore = false;
       },
-      error: (err) => {
+      error: () => {
         if (loadId !== this.activeProfileLoadId) return;
-        console.error('Failed to load user posts', err);
         this.isLoadingMore = false;
       }
     });
@@ -181,8 +178,7 @@ export class ProfileComponent implements OnInit {
       this.userProfile.followersCount--;
 
       this.userService.unfollowUser(this.userProfile.username).subscribe({
-        error: (err) => {
-          console.error('Failed to unfollow', err);
+        error: () => {
           this.userProfile!.isFollowing = true;
           this.userProfile!.followersCount++;
         }
@@ -192,8 +188,7 @@ export class ProfileComponent implements OnInit {
       this.userProfile.followersCount++;
 
       this.userService.followUser(this.userProfile.username).subscribe({
-        error: (err) => {
-          console.error('Failed to follow', err);
+        error: () => {
           this.userProfile!.isFollowing = false;
           this.userProfile!.followersCount--;
         }
@@ -245,7 +240,7 @@ export class ProfileComponent implements OnInit {
             this.hasMorePosts = true;
             this.loadUserPosts();
           },
-          error: (err) => console.error('Failed to unban user', err)
+          error: () => {}
         });
       }
     });
@@ -271,7 +266,7 @@ export class ProfileComponent implements OnInit {
         Object.assign(this.userProfile!, updatedUser);
         this.closeBanModal();
       },
-      error: (err) => console.error('Failed to ban user', err)
+      error: () => {}
     });
   }
 
@@ -291,8 +286,7 @@ export class ProfileComponent implements OnInit {
         this.relationshipUsers = users;
         this.isLoadingRelationships = false;
       },
-      error: (err) => {
-        console.error('Failed to load relationships', err);
+      error: () => {
         this.isLoadingRelationships = false;
       }
     });
@@ -318,8 +312,7 @@ export class ProfileComponent implements OnInit {
       : this.userService.followUser(user.username);
 
     request.subscribe({
-      error: (err) => {
-        console.error('Failed to update relationship', err);
+      error: () => {
         user.isFollowing = previousState;
       }
     });
@@ -350,7 +343,7 @@ export class ProfileComponent implements OnInit {
           next: () => {
             this.router.navigate(['/feed']);
           },
-          error: (err) => console.error('Failed to delete user', err)
+          error: () => {}
         });
       }
     });

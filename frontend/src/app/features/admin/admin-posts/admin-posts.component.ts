@@ -29,8 +29,7 @@ export class AdminPostsComponent implements OnInit {
         this.posts = data;
         this.isLoading = false;
       },
-      error: (err) => {
-        console.error('Failed to load posts', err);
+      error: () => {
         this.isLoading = false;
       }
     });
@@ -47,7 +46,7 @@ export class AdminPostsComponent implements OnInit {
           next: () => {
             this.posts = this.posts.filter(p => p.id !== postId);
           },
-          error: (err) => console.error('Failed to delete post as admin', err)
+          error: () => {}
         });
       }
     });
@@ -70,7 +69,7 @@ export class AdminPostsComponent implements OnInit {
           next: (updatedPost) => {
             Object.assign(post, updatedPost);
           },
-          error: (err) => console.error('Failed to update post visibility', err)
+          error: () => {}
         });
       }
     });

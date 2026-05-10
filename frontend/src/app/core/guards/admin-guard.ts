@@ -14,8 +14,8 @@ export const adminGuard: CanActivateFn = (route, state) => {
       if (isRoleAdmin) {
         return true;
       }
-    } catch (e) {
-      console.error('Failed to parse token in admin guard', e);
+    } catch {
+      localStorage.removeItem('token');
     }
   }
 

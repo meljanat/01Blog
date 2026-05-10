@@ -60,22 +60,35 @@ export class NavbarComponent implements OnInit {
         const payload = JSON.parse(atob(token.split('.')[1]));
         this.currentUser = payload.sub;
         this.isAdmin = JSON.stringify(payload.roles).includes('ROLE_ADMIN');
-      } catch (e) {
-        console.error('Error decoding token', e);
+      } catch {
+        localStorage.removeItem('token');
+        this.currentUser = null;
+        this.isAdmin = false;
       }
     }
   }
 
   loadNotifications() {
-    this.notificationService.getNotifications().subscribe((data) => {
-      this.notifications = data;
-      this.calculateUnread();
+    this.notificationService.getNotifications().subscribe({
+      next: (data) => {
+        this.notifications = data;
+        this.calculateUnread();
+      },
+      error: () => {
+        this.notifications = [];
+        this.unreadCount = 0;
+      }
     });
   }
 
   calculateUnread() {
-    this.notificationService.unreadCount().subscribe((count) => {
-      this.unreadCount = count;
+    this.notificationService.unreadCount().subscribe({
+      next: (count) => {
+        this.unreadCount = count;
+      },
+      error: () => {
+        this.unreadCount = 0;
+      }
     });
   }
 
@@ -92,17 +105,23 @@ export class NavbarComponent implements OnInit {
     event.stopPropagation();
     event.preventDefault();
 
-    this.notificationService.toggleReadStatus(notification.id).subscribe(() => {
-      notification.read = !notification.read;
-      this.calculateUnread();
+    this.notificationService.toggleReadStatus(notification.id).subscribe({
+      next: () => {
+        notification.read = !notification.read;
+        this.calculateUnread();
+      },
+      error: () => {}
     });
   }
 
   readNotification(notification: any) {
     if (!notification.read) {
-      this.notificationService.markAsRead(notification.id).subscribe(() => {
-        notification.read = true;
-        this.calculateUnread();
+      this.notificationService.markAsRead(notification.id).subscribe({
+        next: () => {
+          notification.read = true;
+          this.calculateUnread();
+        },
+        error: () => {}
       });
     }
 

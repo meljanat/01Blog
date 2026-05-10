@@ -57,8 +57,9 @@ export class PostCardComponent {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
         this.isAdmin = JSON.stringify(payload.roles).includes('ROLE_ADMIN');
-      } catch (e) {
-        console.error('Error decoding token for admin check', e);
+      } catch {
+        localStorage.removeItem('token');
+        this.isAdmin = false;
       }
     }
   }
@@ -120,7 +121,7 @@ export class PostCardComponent {
           next: () => {
             this.postDeleted.emit(this.post.id);
           },
-          error: (err) => console.error('Failed to delete post', err)
+          error: () => {}
         });
       }
     });
@@ -146,7 +147,7 @@ export class PostCardComponent {
               this.postDeleted.emit(this.post.id);
             }
           },
-          error: (err) => console.error('Failed to update post visibility', err)
+          error: () => {}
         });
       }
     });
@@ -222,7 +223,7 @@ export class PostCardComponent {
         this.post.mediaType = updatedPost.mediaType;
         this.cancelEdit();
       },
-      error: (err) => console.error('Failed to update post', err)
+      error: () => {}
     });
   }
 
@@ -246,8 +247,7 @@ export class PostCardComponent {
       next: (updatedPost) => {
         this.post.likes = updatedPost.likes;
       },
-      error: (err) => {
-        console.error('Failed to toggle like', err);
+      error: () => {
         if (currentlyLiked) {
           this.post.likes.push({ username: this.currentUser });
         } else {
@@ -268,7 +268,7 @@ export class PostCardComponent {
 
         this.newCommentText = '';
       },
-      error: (err) => console.error('Failed to post comment', err)
+      error: () => {}
     });
   }
 
@@ -288,7 +288,7 @@ export class PostCardComponent {
             this.comments = this.comments.filter(c => c.id !== commentId);
             this.post.commentsCount = Math.max(0, this.post.commentsCount - 1);
           },
-          error: (err) => console.error('Failed to delete comment', err)
+          error: () => {}
         });
       }
     });
@@ -315,7 +315,7 @@ export class PostCardComponent {
         comment.text = updatedComment.text;
         this.cancelEditComment();
       },
-      error: (err) => console.error('Failed to update comment', err)
+      error: () => {}
     });
   }
 }

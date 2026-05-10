@@ -39,8 +39,7 @@ export class AdminUsersComponent implements OnInit {
         this.users = data;
         this.isLoading = false;
       },
-      error: (err) => {
-        console.error('Failed to load users', err);
+      error: () => {
         this.isLoading = false;
       }
     });
@@ -60,7 +59,7 @@ export class AdminUsersComponent implements OnInit {
       action: () => {
         this.adminService.unbanUser(user.id).subscribe({
           next: (updatedUser) => Object.assign(user, updatedUser),
-          error: (err) => console.error('Failed to unban user', err)
+          error: () => {}
         });
       }
     });
@@ -87,7 +86,7 @@ export class AdminUsersComponent implements OnInit {
         Object.assign(user, updatedUser);
         this.closeBanModal();
       },
-      error: (err) => console.error('Failed to ban user', err)
+      error: () => {}
     });
   }
 
@@ -102,7 +101,7 @@ export class AdminUsersComponent implements OnInit {
           next: () => {
             this.users = this.users.filter(existingUser => existingUser.id !== user.id);
           },
-          error: (err) => console.error('Failed to delete user', err)
+          error: () => {}
         });
       }
     });

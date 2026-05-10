@@ -42,8 +42,7 @@ export class PostDetailComponent implements OnInit {
         this.post = data;
         this.isLoading = false;
       },
-      error: (err) => {
-        console.error('Failed to load post', err);
+      error: () => {
         this.isLoading = false;
       }
     });

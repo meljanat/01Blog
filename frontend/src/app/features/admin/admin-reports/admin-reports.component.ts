@@ -30,8 +30,7 @@ export class AdminReportsComponent implements OnInit {
         this.reports = data;
         this.isLoading = false;
       },
-      error: (err) => {
-        console.error('Failed to load reports', err);
+      error: () => {
         this.isLoading = false;
       }
     });
@@ -48,7 +47,7 @@ export class AdminReportsComponent implements OnInit {
           next: () => {
             this.reports = this.reports.filter(r => r.id !== reportId);
           },
-          error: (err) => console.error('Failed to resolve report', err)
+          error: () => {}
         });
       }
     });

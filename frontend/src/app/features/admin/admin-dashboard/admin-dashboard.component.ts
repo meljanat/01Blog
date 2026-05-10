@@ -26,8 +26,7 @@ export class AdminDashboardComponent implements OnInit {
         this.analytics = analytics;
         this.isLoading = false;
       },
-      error: (err) => {
-        console.error('Failed to load admin analytics', err);
+      error: () => {
         this.isLoading = false;
       }
     });

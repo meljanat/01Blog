@@ -59,8 +59,7 @@ export class FeedComponent implements OnInit, OnDestroy {
         this.hasMorePosts = newPosts.length === 10;
         this.isLoadingMore = false;
       },
-      error: (err) => {
-        console.error('Failed to load feed', err);
+      error: () => {
         this.isLoadingMore = false;
       }
     });
@@ -72,8 +71,7 @@ export class FeedComponent implements OnInit, OnDestroy {
         this.suggestedUsers = users;
         this.isLoadingSuggestions = false;
       },
-      error: (err) => {
-        console.error('Failed to load suggestions', err);
+      error: () => {
         this.isLoadingSuggestions = false;
       }
     });
@@ -87,9 +85,7 @@ export class FeedComponent implements OnInit, OnDestroy {
       next: () => {
         this.suggestedUsers = this.suggestedUsers.filter(u => u.username !== user.username);
       },
-      error: (err) => {
-        console.error('Failed to follow suggested user', err);
-      }
+      error: () => {}
     });
   }
 
@@ -131,7 +127,7 @@ export class FeedComponent implements OnInit, OnDestroy {
         this.newPostText = '';
         this.clearSelectedFile();
       },
-      error: (err) => console.error('Failed to create post', err)
+      error: () => {}
     });
   }
 

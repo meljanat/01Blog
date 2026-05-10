@@ -46,10 +46,9 @@ export class ReportModalComponent {
         this.isSubmitting = false;
         setTimeout(() => this.close(), 2000);
       },
-      error: (err) => {
+      error: () => {
         this.errorMessage = 'Failed to submit report. Please try again.';
         this.isSubmitting = false;
-        console.error(err);
       }
     });
   }

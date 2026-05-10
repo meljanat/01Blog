@@ -1,2 +1,8 @@
-cd backend
+#!/usr/bin/env bash
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+source "$SCRIPT_DIR/setup-env.sh"
+cd "$SCRIPT_DIR/backend"
 ./mvnw spring-boot:run
